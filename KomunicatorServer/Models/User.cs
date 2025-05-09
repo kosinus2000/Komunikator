@@ -1,24 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace KomunikatorServer.Models
 {
-    public class User
+    public class User : IdentityUser
     {
-        [Key]
-        public Guid Id { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string Username { get; set; }
-
-        [Required]
-        public string PasswordHash { get; set; }
-
-        [Required]
-        [EmailAddress]
-        [MaxLength(100)]
-        public string Email { get; set; }
-
+        
+        
         [MaxLength(50)]
         public string? DisplayName { get; set; }
 
@@ -26,7 +14,6 @@ namespace KomunikatorServer.Models
 
         public User()
         {
-            Id = Guid.NewGuid();
             RegistrationDate = DateTime.UtcNow;
         }
     }
