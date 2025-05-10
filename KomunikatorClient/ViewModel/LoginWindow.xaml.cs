@@ -22,12 +22,7 @@ public partial class LoginWindow : Window
         InitializeComponent();
         btnMaximize.Visibility = Visibility.Hidden;
     }
-
-    private void ChangeTXT(object sender, RoutedEventArgs e)
-    {
-       
-    }
-
+    
     private void btnLogin_Click(object sender, RoutedEventArgs e)
     {
         throw new NotImplementedException();
