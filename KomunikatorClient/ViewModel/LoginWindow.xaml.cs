@@ -58,10 +58,7 @@ public partial class LoginWindow : Window
         MessageBox.Show("Przycisk rejestracji został kliknięty");
     }
 
-    private void RoundedButton_Loaded(object sender, RoutedEventArgs e)
-    {
-
-    }
+    
 
     private void Label_ResetujHaslo_Click(object sender, MouseButtonEventArgs e)
     {
