@@ -32,20 +32,7 @@ public partial class LoginWindow : Window
     {
         this.DragMove();
     }
-
-    private void txtPassword_TextChanged(object sender, TextChangedEventArgs e)
-    {
-
-    }
-    private void RoundedPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
-    {
-        
-        var passwordBox = sender as RoundedPasswordBox;
-        string password = passwordBox?.Password;
-
-        Console.WriteLine("Hasło zmienione: " + password);
-    }
-
+    
     private void btnRegister_Click(object sender, RoutedEventArgs e)
     {
         // Tutaj umieść kod, który ma się wykonać po kliknięciu przycisku
