@@ -23,19 +23,19 @@ namespace KomunicatorServer
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(conectionString));
             builder.Services.AddIdentity<User, IdentityRole>(options => {
-                    options.Password.RequireDigit = true;               // Czy has³o musi zawieraæ cyfrê? (np. 123)
-                    options.Password.RequiredLength = 8;                // Minimalna d³ugoœæ has³a.
-                    options.Password.RequireNonAlphanumeric = false;    // Czy has³o musi zawieraæ znak specjalny? (np. !, @, #). Warto ustawiæ na true dla wiêkszego bezpieczeñstwa.
-                    options.Password.RequireUppercase = true;           // Czy has³o musi zawieraæ du¿¹ literê? (np. A-Z)
-                    options.Password.RequireLowercase = true;           // Czy has³o musi zawieraæ ma³¹ literê? (np. a-z)
+                    options.Password.RequireDigit = true;               
+                    options.Password.RequiredLength = 8;                
+                    options.Password.RequireNonAlphanumeric = false;   
+                    options.Password.RequireUppercase = true;           
+                    options.Password.RequireLowercase = true;          
 
-                    // Opcje dotycz¹ce u¿ytkownika
-                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; // Dozwolone znaki w nazwie u¿ytkownika.
-                    options.User.RequireUniqueEmail = true;        // Unikalny adres e-mail dla ka¿dego u¿ytkownika.
+                    // Opcje dotyczace uzytkownika
+                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; 
+                    options.User.RequireUniqueEmail = true;        
 
 
-                    // Opcje dotycz¹ce logowania
-                    // options.SignIn.RequireConfirmedAccount = false; // Czy konto musi byæ potwierdzone (np. przez email), aby siê zalogowaæ. Na pocz¹tek mo¿na ustawiæ na false.
+                    // Opcje dotyczace logowania
+                    // options.SignIn.RequireConfirmedAccount = false; // Czy konto musi byc potwierdzone (np. przez email), aby sie zalogowac. Na poczatek mozna ustawic na false.
                     // options.SignIn.RequireConfirmedEmail = false;
                     // options.SignIn.RequireConfirmedPhoneNumber = false;
             })

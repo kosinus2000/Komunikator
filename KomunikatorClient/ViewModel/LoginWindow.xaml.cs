@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using KomunikatorClient.Models;
 
 namespace Komunikator;
 
@@ -16,31 +17,31 @@ namespace Komunikator;
 /// </summary>
 public partial class LoginWindow : Window
 {
-   
+    
+
     public LoginWindow()
     {
         InitializeComponent();
         btnMaximize.Visibility = Visibility.Hidden;
     }
-    
+
     private void btnLogin_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        LoginRequestModel sendingDates = new LoginRequestModel();
+        string userName = UserNameRoundedTxtBox.Text;
+        string userPassword = UserPasswordRoundedTxtBox.Password;
+        
+        sendingDates.Username = userName;
+        sendingDates.Password = userPassword;
+        MessageBox.Show($"Dane gotowe do wysłania:\nUżytkownik: {sendingDates.Username}\nHasło: [dla bezpieczeństwa nie pokazujemy]", "Dane logowania");
+
     }
+
 
     private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         this.DragMove();
     }
-    
-    private void btnRegister_Click(object sender, RoutedEventArgs e)
-    {
-        // Tutaj umieść kod, który ma się wykonać po kliknięciu przycisku
-        // Na przykład:
-        MessageBox.Show("Przycisk rejestracji został kliknięty");
-    }
-
-    
 
     private void Label_ResetujHaslo_Click(object sender, MouseButtonEventArgs e)
     {
@@ -67,12 +68,16 @@ public partial class LoginWindow : Window
             case WindowState.Maximized:
                 this.WindowState = WindowState.Normal;
                 break;
-            
         }
     }
 
     private void btnExit_Click(object sender, RoutedEventArgs e)
     {
         this.Close();
+    }
+
+    private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e)
+    {
+
     }
 }

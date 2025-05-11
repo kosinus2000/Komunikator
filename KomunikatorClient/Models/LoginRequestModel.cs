@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KomunikatorClient.Models
 {
-    internal class LoginRequestModel
+    public class LoginRequestModel
     {
         public string Username { get; set; }
         public string Password { get; set; }

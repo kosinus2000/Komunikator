@@ -5,8 +5,6 @@ namespace KomunikatorServer.Models
 {
     public class User : IdentityUser
     {
-        
-        
         [MaxLength(50)]
         public string? DisplayName { get; set; }
 
