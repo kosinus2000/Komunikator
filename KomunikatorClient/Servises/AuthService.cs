@@ -29,11 +29,14 @@ namespace KomunikatorClient.Services
 
             try
             {
+                // serializacja Jsona -> zbudowanie Jsona z dostępnych dannych
                 string jsonPayload = System.Text.Json.JsonSerializer.Serialize(loginRequestModel);
                 /*Log.Debug("AuthService: Wysyłamy Json payload {Payload}", jsonPayload);
 
+                // utworzenie ciała zapytania z Jasonem, kodowaniem  oraz ścieżką endpointa
                 HttpContent httpContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
+                // wysyłaanie danych na wskazany endpoint
                 Log.Information("AuthService: Wysyłanie żądania POST na adres: {Url}", loginEndpointUrl);
                 HttpResponseMessage httpResponse = await _httpClient.PostAsync(loginEndpointUrl, httpContent);
 
@@ -51,6 +54,10 @@ namespace KomunikatorClient.Services
                     "AuthService: Wysyłanie żądania POST (używając PostAsJsonAsync) na adres: {Url} dla użytkownika {Username}",
                     loginEndpointUrl, loginRequestModel.Username);
 
+                // Utwożenie responda. Do responda przypisywana jest od razu odpowiedź. Za wysyłanie odpowiada
+                // metoda PostAsJsonAsync, w którym przekazujemy pełną ścieżke endpointa oraz dane logowania w formie
+                // instancji LoginRequestModel. Await odpowiada za to, że aplikacja czeka na zakończenie operacji, 
+                // jednocześnie nie blokując głównego wątku
                 HttpResponseMessage httpResponse =
                     await _httpClient.PostAsJsonAsync(loginEndpointUrl, loginRequestModel);
 
@@ -65,9 +72,37 @@ namespace KomunikatorClient.Services
                 }
                 else
                 {
-                    Log.Warning("AuthService: Logowanie nieudane dla użytkownika {Username}. Status: {StatusCode}",
-                        loginRequestModel.Username, httpResponse.StatusCode);
-                    
+                    // W tym przypadku następuje utworzenie stringa z błędem. Dzięki await aplikacja czeka na wysłanie 
+                    // błegu. HttpResponse.Content pobiera treść odpowiedzi HTTP nataomiast .ReadAsStringAsync()
+                    // przekształca zawartość odpowiedzi na tekst asynchronicznie.
+                    // Muszę pamiętać, że odpowiedź z serwera orginalnie ma format JSONa np.
+                    // { "message": "Niepoprawne dane logowania", "errorCode": 401 }
+                    string errorContent = await httpResponse.Content.ReadAsStringAsync();
+
+                    Log.Warning(
+                        "AuthService: Logowanie nie powiodło się dla użytkownika {Username}. Status: {StatusCode}, Treść błędu: {ErrorContent}",
+                        loginRequestModel.Username, httpResponse.StatusCode,
+                        // jezeli string jest pusty to zwraca [Brak], jeżeli nie, wypisuje errorContent
+                        string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
+
+                    ErrorResponse? structuredError = null;
+                    if (!string.IsNullOrEmpty(errorContent))
+                        try
+                        {
+                            structuredError = JsonSerializer.Deserialize<ErrorResponse>(errorContent);
+                        }
+                        catch (JsonException eJson)
+                        {
+                            Log.Error(eJson,
+                                "AuthService: Nie udało sie zdeserializować treści błędu jako ErrorResponse. Treść {ErrorContent}",
+                                errorContent);
+                        }
+
+                    if (structuredError != null && !string.IsNullOrEmpty(structuredError.Message))
+                    {
+                        Log.Warning("AuthService: Szczegóły błędu logowania (z ErrorResponse): Code='{ErrorCode}', Message='{Message}'",
+                            structuredError.ErrorCode, structuredError.Message);
+                    }
                     return false;
                 }
 
@@ -81,7 +116,8 @@ namespace KomunikatorClient.Services
             }
             catch (HttpRequestException e)
             {
-                Log.Error("AuthService: Błąd żądania http podczas logowania logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
+                Log.Error(
+                    "AuthService: Błąd żądania http podczas logowania logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
                     loginRequestModel.Username, loginEndpointUrl);
                 return false;
             }

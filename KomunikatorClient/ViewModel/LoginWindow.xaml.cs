@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using KomunikatorClient.Models;
+using KomunikatorClient.Services;
+using Serilog;
 
 namespace Komunikator;
 
@@ -17,24 +19,47 @@ namespace Komunikator;
 /// </summary>
 public partial class LoginWindow : Window
 {
-    
-
     public LoginWindow()
     {
         InitializeComponent();
         btnMaximize.Visibility = Visibility.Hidden;
     }
 
-    private void btnLogin_Click(object sender, RoutedEventArgs e)
+    private async  void btnLogin_Click(object sender, RoutedEventArgs e)
     {
-        LoginRequestModel sendingDates = new LoginRequestModel();
         string userName = UserNameRoundedTxtBox.Text;
         string userPassword = UserPasswordRoundedTxtBox.Password;
-        
-        sendingDates.Username = userName;
-        sendingDates.Password = userPassword;
-        MessageBox.Show($"Dane gotowe do wysłania:\nUżytkownik: {sendingDates.Username}\nHasło: [dla bezpieczeństwa nie pokazujemy]", "Dane logowania");
 
+        LoginRequestModel sendingData = new LoginRequestModel
+        {
+            Username = userName,
+            Password = userPassword
+        };
+        Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}", sendingData.Username);
+        
+        AuthService authService = new AuthService();
+        try
+        {
+            bool respondSuccesed = await authService.LoginAsync(sendingData);
+
+            if (respondSuccesed)
+            {
+                Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
+                    sendingData.Username);
+                MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                Log.Warning("LoginWindow: Logowanie nieudane dla użytkownika {Username}.", sendingData.Username);
+                MessageBox.Show("Logowanie nie powiodło się. Sprawdź wprowadzone dane lub spróbuj ponownie później.",
+                    "Błąd logowania", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby logwoania użytkownika {Username}.",sendingData.Username);
+            MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
 
@@ -78,6 +103,5 @@ public partial class LoginWindow : Window
 
     private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e)
     {
-
     }
 }
