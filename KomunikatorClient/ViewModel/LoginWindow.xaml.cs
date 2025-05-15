@@ -128,13 +128,15 @@ public partial class LoginWindow : Window
         string userPasswordRegistration = UserPasswordRoundedTxtBoxRejestration.Password;
         string userPasswordConfirmation = UserPasswordRoundedTxtBoxRejestrationRepeat.Password;
         
-        // reszta metody...
+        RegistrationReguestModel sendingDataRegistration = new RegistrationReguestModel
+        {
+            Username = userNameRegistration,
+            Email = userEmailRegistration,
+            Password = userPasswordRegistration
+        };
     }
 
-    private RegistrationReguestModel sendingDataRegistration = new RegistrationReguestModel
-    {
-        
-    };
+    
     
     
     

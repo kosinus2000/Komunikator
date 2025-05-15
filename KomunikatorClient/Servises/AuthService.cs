@@ -66,8 +66,6 @@ namespace KomunikatorClient.Services
                     Log.Information(
                         "AuthService: Logowanie przebiegło pomyślnie dla użytkownika {Username}. Status: {StatusCode}",
                         loginRequestModel.Username, httpResponse.StatusCode);
-
-
                     return true;
                 }
                 else
@@ -85,6 +83,7 @@ namespace KomunikatorClient.Services
                         // jezeli string jest pusty to zwraca [Brak], jeżeli nie, wypisuje errorContent
                         string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
 
+                    //deserializacja błędu
                     ErrorResponse? structuredError = null;
                     if (!string.IsNullOrEmpty(errorContent))
                         try
@@ -102,9 +101,9 @@ namespace KomunikatorClient.Services
                     {
                         Log.Warning("AuthService: ");
                     }
+
                     return false;
                 }
-
                 // if (httpResponse != null)
                 // {
                 //     Log.Information("AuthService: Otrzymano odpowiedź od serwera (PostAsJsonAsync) ze statusem: {StatusCode}", httpResponse.StatusCode);
@@ -130,7 +129,81 @@ namespace KomunikatorClient.Services
             {
                 Log.Error("AuthService: Nieoczekiwany bład podczas logowania użytkownika {Username}",
                     loginRequestModel.Username);
-                ;
+
+                return false;
+            }
+        }
+
+        public async Task<bool> RegisterAsync(RegistrationReguestModel registrationReguestModel)
+        {
+            string path = "/api/auth/register";
+            string loginEndpointUrl = $"{ServerApiBaseUrl}{path}";
+            Log.Debug("AuthService: Pełny URL do rejstracji: {Url}", loginEndpointUrl);
+
+            try
+            {
+                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(registrationReguestModel);
+                Log.Information(
+                    "AuthService: Wysyłanie żądania POST do rejestracji (używając PostAsJsonAsync) na adres: {Url} dla użytkownika {Username}",
+                    loginEndpointUrl, registrationReguestModel.Username);
+                HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(loginEndpointUrl,
+                    registrationReguestModel);
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    Log.Information(
+                        "AuthService: Rejestracja przebiegła pomyślnie dla użytkownika {Username}. Status: {StatusCode}",
+                        registrationReguestModel.Username, httpResponse.StatusCode);
+                    return true;
+                }
+                else
+                {
+                    string errorContent = await httpResponse.Content.ReadAsStringAsync();
+
+                    Log.Warning(
+                        "Coś się popsuło i nie było mnie słychać. Użytkownik: {Username},Status: {StatusCode}, Treść błędu: {ErrorContent}",
+                        registrationReguestModel.Username, httpResponse.StatusCode,
+                        string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
+
+                    ErrorResponse? structuredError = null;
+                    if (!string.IsNullOrEmpty(errorContent))
+                        try
+                        {
+                            structuredError = JsonSerializer.Deserialize<ErrorResponse>(errorContent);
+                        }
+                        catch (JsonException jj)
+                        {
+                            Log.Error(jj,
+                                "AuthService: Nie udało się zdeserializować treści błędu jako ErrorResponse. Treść {ErrorContent}",
+                                errorContent);
+                        }
+
+                    if (structuredError != null && !string.IsNullOrEmpty(structuredError.Message))
+                    {
+                        Log.Warning("AuthService: ");
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
+            catch (HttpRequestException e)
+            {
+                Log.Error(
+                    "AuthService: Błąd żądania http podczas logowania logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
+                    registrationReguestModel.Username, loginEndpointUrl);
+                return false;
+            }
+            catch (JsonException e)
+            {
+                Log.Error("AuthService: Błąd wysłanego json podczas przygotowania żądania dla {Username}",
+                    registrationReguestModel.Username);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Log.Error("AuthService: Nieoczekiwany bład podczas logowania użytkownika {Username}",
+                    registrationReguestModel.Username);
                 return false;
             }
         }
