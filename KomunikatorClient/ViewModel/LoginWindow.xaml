@@ -64,19 +64,21 @@
                     <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource vanilla_button}">
 
                         <Viewbox>
-                            <Image Source="/Images/icons8-minimize-window-96.png"></Image>
+                            <Image Source="/Images/icons8-minimize-window-96.png" Opacity="0.8"></Image>
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnMaximize" Style="{StaticResource vanilla_button}" Grid.Column="1"
                             Click="btnMaximize_Click">
                         <Viewbox>
-                            <Image Source="/Images/icons8-maximize-window-96.png"></Image>
+                            <Image Source="/Images/icons8-maximize-window-96.png" Opacity="0.8"></Image>
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnClose" Style="{StaticResource vanilla_button}" Grid.Column="2"
                             Click="btnExit_Click">
                         <Viewbox>
-                            <Image Source="/Images/icons8-close-window-96.png" RenderTransformOrigin="0.078,0.078"></Image>
+                            <Image Source="/Images/icons8-close-window-96.png" RenderTransformOrigin="0.078,0.078"
+                                   Opacity="0.8">
+                            </Image>
                         </Viewbox>
                     </Button>
                 </Grid>
@@ -105,6 +107,7 @@
                         Margin="20"
                         Name="LoginStackPanel"
                         Visibility="Hidden">
+
                 <TextBlock Text="Witaj!"
 
                            Foreground="#F3F9D2"
@@ -134,9 +137,9 @@
 
                     <local:RoundedTextBox Width="200"
                                           Height="30"
-                                          x:Name="UserNameRoundedTxtBox"
+                                          x:Name="UserNameRoundedTxtBoxLogin"
                                           CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" Loaded="UserNameRoundedTxtBox_Loaded" />
+                                          Text="{Binding UserName, Mode=TwoWay}" />
 
 
                 </StackPanel>
@@ -158,7 +161,7 @@
 
                     <local:RoundedPasswordBox Width="200"
                                               Height="30"
-                                              x:Name="UserPasswordRoundedTxtBox"
+                                              x:Name="UserPasswordRoundedTxtBoxLogin"
                                               CornerRadius="0,5,0,5" />
 
 
@@ -199,13 +202,19 @@
 
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="10">
-                <Button Click="BackButton_Click">
-                    <Image Source="/Images/arrow_left.png" Width="24" Height="24" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="10" Background="Transparent">
+                <Button Click="BackButton_Click" OpacityMask="Black" Background="Transparent"
+                        BorderBrush="Transparent">
+                    <Image x:Name="backBtn" Source="/Images/icons8-back-arrow-32 (1).png" Width="24" Height="24"
+                           Opacity="0.7">
+
+                    </Image>
                 </Button>
             </StackPanel>
+
+
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20"
-                        Name="RegisterStackPanel" Visibility="Visible">
+                        Name="RegisterStackPanel" Visibility="Hidden">
 
 
                 <StackPanel Orientation="Vertical">
@@ -233,15 +242,14 @@
 
                            VerticalAlignment="Bottom"
 
-                           Height="22" 
-                           Margin="0,05,0,0"/>
+                           Height="22"
+                           Margin="0,05,0,0" />
 
                     <local:RoundedTextBox Width="200"
                                           Height="30"
-                                          x:Name="UserNameRoundedTxtBoxRejestration"
+                                          x:Name="UserNameRoundedTxtBoxRegistration"
                                           CornerRadius="0,0,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}"
-                                          Loaded="UserNameRoundedTxtBox_Loaded" />
+                                          Text="{Binding UserName, Mode=TwoWay}" />
                     <Label Content="E-mail:"
 
                            Foreground="#F3F9D2"
@@ -256,10 +264,9 @@
 
                     <local:RoundedTextBox Width="200"
                                           Height="30"
-                                          x:Name="EmailRoundedTxtBoxRejestration"
+                                          x:Name="UserEmailRoundedTxtBoxRegistration"
                                           CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}"
-                                          Loaded="UserNameRoundedTxtBox_Loaded" />
+                                          Text="{Binding UserName, Mode=TwoWay}" />
 
                     <Label Content="Hasło:"
 
@@ -294,7 +301,7 @@
                                               Height="30"
                                               x:Name="UserPasswordRoundedTxtBoxRejestrationRepeat"
                                               CornerRadius="0,5,0,5" />
-                    
+
                     <local:RoundedButton Width="100"
                                          Height="30"
                                          ButtonContent="Rejestracja"
@@ -308,7 +315,75 @@
                                          Margin="0,10,0,0"
                                          Click="btnRegister_Click" />
                 </StackPanel>
+
             </StackPanel>
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
+                        Name="PasswordResetStackPanel" Visibility="Visible">
+
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Podaj E-mail"
+
+                               Foreground="#F3F9D2"
+
+                               FontSize="20"
+
+
+                               FontWeight="Bold"
+
+                               Margin="0,0,0,0"
+
+                               HorizontalAlignment="Center" />
+
+                    <TextBlock
+                        Text="Podaj adres E-mail, aby wygenerować link, po którym możliwe będzie ustawienie nowego hasła"
+
+                        Foreground="#F3F9D2"
+                        TextWrapping="Wrap"
+                        TextAlignment="Center"
+                        FontWeight="Regular"
+
+                        Margin="10,015,10,10
+" Opacity="0.975" FontSize="11" HorizontalAlignment="Center" />
+
+                    <Label Content="E-mail:"
+
+                           Foreground="#F3F9D2"
+
+                           FontSize="10"
+
+                           HorizontalAlignment="Left"
+
+                           VerticalAlignment="Bottom"
+
+                           Height="22"
+                           Margin="27,05,0,0" />
+
+                    <local:RoundedTextBox Width="200"
+                                          Height="30"
+                                          x:Name="UserEmailRoundedTxtBoxPasswordReset"
+                                          CornerRadius="0,0,0,5"
+                                          Text="{Binding UserName, Mode=TwoWay}" />
+
+
+                    <local:RoundedButton Width="100"
+                                         Height="30"
+                                         ButtonContent="Wyślij"
+                                         CornerRadius="0,5,0,5"
+                                         Background="#F3F9D2"
+                                         BorderBrush="#6A994E"
+                                         BorderThickness="3"
+                                         FontSize="12"
+                                         FontWeight="DemiBold"
+                                         Foreground="#6A994E"
+                                         Margin="0,10,0,0"
+                                         Click="btnRessetPasswordSend_Click" />
+
+
+                </StackPanel>
+            </StackPanel>
+
         </Grid>
     </Grid>
 </Window>

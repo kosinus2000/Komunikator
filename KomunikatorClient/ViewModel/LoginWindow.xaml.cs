@@ -14,44 +14,98 @@ using Serilog;
 
 namespace Komunikator;
 
-/// <summary>
-/// Interaction logic for LoginWindow.xaml
-/// </summary>
+
+public enum View
+{
+    Login,
+    Register,
+    PasswordReset
+}
+
 public partial class LoginWindow : Window
 {
+    
+    // --- Zarządzanie oknami ---
+    
+    
+    private View _view = View.Login;
+    public View View
+    {
+        get => _view;
+        set => _view = value;
+    }
+
+    public void SetView(View view)
+    {
+        if (view == View.Login)
+        {
+            Height = 300;
+            LoginStackPanel.Visibility = Visibility.Visible;
+            RegisterStackPanel.Visibility = Visibility.Hidden;
+            PasswordResetStackPanel.Visibility = Visibility.Hidden;
+            backBtn.Visibility = Visibility.Hidden;
+        }
+
+        else if (view == View.Register)
+        {
+            Height = 350;
+            LoginStackPanel.Visibility = Visibility.Hidden;
+            RegisterStackPanel.Visibility = Visibility.Visible;
+            PasswordResetStackPanel.Visibility = Visibility.Hidden;
+            backBtn.Visibility = Visibility.Visible;
+        }
+        else if (view == View.PasswordReset)
+        {
+            Height = 250;
+            LoginStackPanel.Visibility = Visibility.Hidden;
+            RegisterStackPanel.Visibility = Visibility.Hidden;
+            PasswordResetStackPanel.Visibility = Visibility.Visible;
+            backBtn.Visibility = Visibility.Visible;
+        }
+       
+    }
+    
     public LoginWindow()
     {
         InitializeComponent();
-        LoginStackPanel.Visibility = Visibility.Hidden;
+        SetView(View.Login);
         btnMaximize.Visibility = Visibility.Hidden;
     }
-
+//--------------------------------------------------------------------------------------------------------------------
+    
+    // --- Metody dla logowaina ---
     private async void btnLogin_Click(object sender, RoutedEventArgs e)
     {
-        string userName = UserNameRoundedTxtBox.Text;
-        string userPassword = UserPasswordRoundedTxtBox.Password;
-
-        LoginRequestModel sendingData = new LoginRequestModel
+        // --- Logowanie ---
+        string userNameLogin = UserNameRoundedTxtBoxLogin.Text;
+        string userPasswordLogin = UserPasswordRoundedTxtBoxLogin.Password;
+        
+        
+        // --- Resetowanie hasła
+        string userEmailPasswordReset = UserEmailRoundedTxtBoxPasswordReset.Text;
+        
+        LoginRequestModel sendingDataLogin = new LoginRequestModel
         {
-            Username = userName,
-            Password = userPassword
+            Username = userNameLogin,
+            Password = userPasswordLogin
         };
-        Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}", sendingData.Username);
+        
+        Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}", sendingDataLogin.Username);
 
         AuthService authService = new AuthService();
         try
         {
-            bool respondSuccesed = await authService.LoginAsync(sendingData);
+            bool respondSuccesed = await authService.LoginAsync(sendingDataLogin);
 
             if (respondSuccesed)
             {
                 Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
-                    sendingData.Username);
+                    sendingDataLogin.Username);
                 MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                Log.Warning("LoginWindow: Logowanie nieudane dla użytkownika {Username}.", sendingData.Username);
+                Log.Warning("LoginWindow: Logowanie nieudane dla użytkownika {Username}.", sendingDataLogin.Username);
                 MessageBox.Show("Logowanie nie powiodło się. Sprawdź wprowadzone dane lub spróbuj ponownie później.",
                     "Błąd logowania", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
@@ -59,13 +113,31 @@ public partial class LoginWindow : Window
         catch (Exception ex)
         {
             Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby logwoania użytkownika {Username}.",
-                sendingData.Username);
+                sendingDataLogin.Username);
             MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
     }
+    //-----------------------------------------------------------------------------------------------------------------
+    
+    // --- Metody dla rejestracji ---
+    private void btnRegister_Click(object sender, RoutedEventArgs e)
+    {
+        string userNameRegistration = UserNameRoundedTxtBoxRegistration.Text;
+        string userEmailRegistration = UserEmailRoundedTxtBoxRegistration.Text;
+        string userPasswordRegistration = UserPasswordRoundedTxtBoxRejestration.Password;
+        string userPasswordConfirmation = UserPasswordRoundedTxtBoxRejestrationRepeat.Password;
+        
+        // reszta metody...
+    }
 
-
+    private RegistrationReguestModel sendingDataRegistration = new RegistrationReguestModel
+    {
+        
+    };
+    
+    
+    
     private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         this.DragMove();
@@ -73,12 +145,12 @@ public partial class LoginWindow : Window
 
     private void Label_ResetujHaslo_Click(object sender, MouseButtonEventArgs e)
     {
-        MessageBox.Show("Resetowanie hasła... (tu dodaj swój kod)");
+        SetView(View.PasswordReset);
     }
 
     private void Label_Zarejestruj_Click(object sender, MouseButtonEventArgs e)
     {
-        MessageBox.Show("Rejestracja... (tu dodaj swój kod)");
+        SetView(View.Register);
     }
 
     private void btnMinimize_Click(object sender, RoutedEventArgs e)
@@ -107,9 +179,19 @@ public partial class LoginWindow : Window
     private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e)
     {
     }
-
-    private void btnRegister_Click(object sender, RoutedEventArgs e)
+    
+    private void BackButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        SetView(View.Login);
+    }
+
+    private void btnPasswordReset_Click(object sender, RoutedEventArgs e)
+    {
+        
+    }
+
+    private void btnRessetPasswordSend_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Resetowanie hasła... (tu dodaj swój kod)");
     }
 }
