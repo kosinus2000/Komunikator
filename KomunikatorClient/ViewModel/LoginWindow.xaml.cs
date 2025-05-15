@@ -22,10 +22,11 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
+        LoginStackPanel.Visibility = Visibility.Hidden;
         btnMaximize.Visibility = Visibility.Hidden;
     }
 
-    private async  void btnLogin_Click(object sender, RoutedEventArgs e)
+    private async void btnLogin_Click(object sender, RoutedEventArgs e)
     {
         string userName = UserNameRoundedTxtBox.Text;
         string userPassword = UserPasswordRoundedTxtBox.Password;
@@ -36,7 +37,7 @@ public partial class LoginWindow : Window
             Password = userPassword
         };
         Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}", sendingData.Username);
-        
+
         AuthService authService = new AuthService();
         try
         {
@@ -57,8 +58,10 @@ public partial class LoginWindow : Window
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby logwoania użytkownika {Username}.",sendingData.Username);
-            MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK, MessageBoxImage.Error);
+            Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby logwoania użytkownika {Username}.",
+                sendingData.Username);
+            MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -103,5 +106,10 @@ public partial class LoginWindow : Window
 
     private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e)
     {
+    }
+
+    private void btnRegister_Click(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -42,24 +42,40 @@ public class AuthController : Controller
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Próba weryfikacji hasła dla użytkownika: {Username}", model.Username);
-        var signInResult = await _signInManager.PasswordSignInAsync(model.Username, model.Password, false, true);
+        try
+        {
+            _logger.LogInformation("Próba weryfikacji hasła dla użytkownika: {Username}", model.Username);
+            var signInResult = await _signInManager.PasswordSignInAsync(model.Username, model.Password, false, true);
 
-        if (signInResult.Succeeded)
-        {
-            _logger.LogInformation("Logowanie zakończone sukcesem dla użytkownika {Username}", model.Username);
-            return Ok();
+            if (signInResult.Succeeded)
+            {
+                _logger.LogInformation("Logowanie zakończone sukcesem dla użytkownika {Username}", model.Username);
+                return Ok();
+            }
+            else if (signInResult.IsLockedOut)
+            {
+                _logger.LogWarning("Próba logowania na ZABLOKOWANE konto: {Username}", model.Username);
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new { Message = "Twoje konto jest zablokowane z powodu zbyt wielu prób logowania." });
+            }
+            else if (signInResult.IsNotAllowed)
+            {
+                _logger.LogWarning("Próba dostępu do nieaktywowanego konta dla użytkownika {Username}", model.Username);
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new { Message = "Twoje konto nie jest aktywne." });
+            }
+            else
+            {
+                _logger.LogWarning("Próba dostępu ze złymi danymi do konta: {Username}", model.Username);
+                return Unauthorized(
+                    new { Message = "Nieprawidłowa nazwa użytkownika lub hasło." });
+            }
         }
-        else if (signInResult.IsLockedOut)
+        catch (Exception e)
         {
-            _logger.LogWarning("Próba logowania na ZABLOKOWANE konto: {Username}", model.Username);
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new { Message = "Twoje konto jest zablokowane z powodu zbyt wielu prób logowania." });
-        }else if (signInResult.IsNotAllowed)
-        {
-            
+            _logger.LogError(e, "Błąd krytyczny podczas logowania użytkownika {Username}", model.Username);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { Message = "Wystąpił wewnętrzny błąd serwera. Spróbuj ponownie później." });
         }
-
-        return Ok();
     }
 }

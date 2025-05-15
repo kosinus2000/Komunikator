@@ -100,8 +100,7 @@ namespace KomunikatorClient.Services
 
                     if (structuredError != null && !string.IsNullOrEmpty(structuredError.Message))
                     {
-                        Log.Warning("AuthService: Szczegóły błędu logowania (z ErrorResponse): Code='{ErrorCode}', Message='{Message}'",
-                            structuredError.ErrorCode, structuredError.Message);
+                        Log.Warning("AuthService: ");
                     }
                     return false;
                 }
