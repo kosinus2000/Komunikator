@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using KomunikatorServer.Data;
+using KomunikatorServer.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace KomunicatorServer
 {
@@ -8,13 +10,40 @@ namespace KomunicatorServer
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var conectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrEmpty(conectionString))
+            {
+                throw new Exception("Connection string 'DefaultConnection' not found.");
+            }
 
             // Add services to the container.
 
             builder.Services.AddControllers();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(conectionString));
+            builder.Services.AddIdentity<User, IdentityRole>(options => {
+                    options.Password.RequireDigit = true;               
+                    options.Password.RequiredLength = 8;                
+                    options.Password.RequireNonAlphanumeric = false;   
+                    options.Password.RequireUppercase = true;           
+                    options.Password.RequireLowercase = true;          
+
+                    // Opcje dotyczace uzytkownika
+                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; 
+                    options.User.RequireUniqueEmail = true;        
+
+
+                    // Opcje dotyczace logowania
+                    // options.SignIn.RequireConfirmedAccount = false; // Czy konto musi byc potwierdzone (np. przez email), aby sie zalogowac. Na poczatek mozna ustawic na false.
+                    // options.SignIn.RequireConfirmedEmail = false;
+                    // options.SignIn.RequireConfirmedPhoneNumber = false;
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -27,8 +56,11 @@ namespace KomunicatorServer
                 app.UseSwaggerUI();
             }
 
+            
+
             app.UseHttpsRedirection();
 
+            app.UseAuthentication(); // Najpierw autentykacja
             app.UseAuthorization();
 
 

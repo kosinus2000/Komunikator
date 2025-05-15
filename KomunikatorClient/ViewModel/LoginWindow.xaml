@@ -134,8 +134,9 @@
 
                     <local:RoundedTextBox Width="200"
                                           Height="30"
+                                          x:Name="UserNameRoundedTxtBox"
                                           CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" />
+                                          Text="{Binding UserName, Mode=TwoWay}" Loaded="UserNameRoundedTxtBox_Loaded" />
 
 
                 </StackPanel>
@@ -157,8 +158,9 @@
 
                     <local:RoundedPasswordBox Width="200"
                                               Height="30"
+                                              x:Name="UserPasswordRoundedTxtBox"
                                               CornerRadius="0,5,0,5"
-                                              PasswordChanged="RoundedPasswordBox_PasswordChanged" />
+                                               />
 
 
                 </StackPanel>
@@ -176,7 +178,7 @@
                                          FontWeight="DemiBold"
                                          Foreground="#6A994E"
                                          Margin="0,10,0,0"
-                                         Click="btnRegister_Click" />
+                                         Click="btnLogin_Click" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
                     <Label Content="Resetuj hasło"
