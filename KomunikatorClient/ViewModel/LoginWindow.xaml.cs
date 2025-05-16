@@ -11,6 +11,7 @@ using System.Windows.Shapes;
 using KomunikatorClient.Models;
 using KomunikatorClient.Services;
 using Serilog;
+using static KomunikatorClient.Services.AuthService;
 
 namespace Komunikator;
 
@@ -24,6 +25,9 @@ public enum View
 public partial class LoginWindow : Window
 {
     // --- Zarządzanie oknami ---
+
+    public string RegisterUsername { get; set; }
+    public string RegisterEmail { get; set; }
 
 
     private View _view = View.Login;
@@ -43,6 +47,7 @@ public partial class LoginWindow : Window
             RegisterStackPanel.Visibility = Visibility.Hidden;
             PasswordResetStackPanel.Visibility = Visibility.Hidden;
             backBtn.Visibility = Visibility.Hidden;
+          //  UserNameRoundedTxtBoxLogin.IsEnabled = 
         }
 
         else if (view == View.Register)
@@ -122,47 +127,55 @@ public partial class LoginWindow : Window
     // --- Metody dla rejestracji ---
     private async void btnRegister_Click(object sender, RoutedEventArgs e)
     {
-        string userNameRegistration = UserNameRoundedTxtBoxRegistration.Text;
-        string userEmailRegistration = UserEmailRoundedTxtBoxRegistration.Text;
+        Log.Information("btnRegister_Click: Próba pobrania danych z formularza rejestracji.");
+        string userNameRegistration = RegisterUsername;
+        string userEmailRegistration = RegisterEmail;
         string userPasswordRegistration = UserPasswordRoundedTxtBoxRejestration.Password;
         string userPasswordConfirmation = UserPasswordRoundedTxtBoxRejestrationRepeat.Password;
+        Log.Information($"btnRegister_Click: UserName: '{userNameRegistration}', Email: '{userEmailRegistration}', Password: '{userPasswordRegistration}', ConfirmPassword: '{userPasswordConfirmation}'");
 
-        RegisterRequestModel sendingDataRegistration = new RegisterRequestModel
+        RegisterRequestModel registrationData = new RegisterRequestModel
         {
             Username = userNameRegistration,
             Email = userEmailRegistration,
             Password = userPasswordRegistration
         };
         Log.Information("LoginWindow: Przygotowano dane do rejestracji dla użytkownika {UserName}",
-            sendingDataRegistration.Username);
+            registrationData.Username);
 
         AuthService authService = new AuthService();
         if (userPasswordRegistration == userPasswordConfirmation)
         {
             try
             {
-                bool respondSuccesed = await authService.RegisterAsync(sendingDataRegistration);
-                if (respondSuccesed)
+                RegistrationResultModel registrationResult = await authService.RegisterAsync(registrationData);
+                if (registrationResult.Succeeded)
                 {
                     Log.Information("LoginWindow: Rejestracja zakończone sukcesem dla użytkownika {Username}!",
-                        sendingDataRegistration.Username);
-                    MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                        registrationData.Username);
+                    MessageBox.Show("Rejestracja pomyślna! Możesz się teraz zalogować.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                     SetView(View.Login);
                 }
                 else
                 {
-                    Log.Warning("LoginWindow: Rejestracja nieudane dla użytkownika {Username}.",
-                        sendingDataRegistration.Username);
-                    MessageBox.Show(
-                        "Rejestracja nie powiodło się. Sprawdź wprowadzone dane lub spróbuj ponownie później.",
-                        "Błąd logowania", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Log.Warning("LoginWindow: Rejestracja nieudana dla użytkownika {Username}.",
+                        registrationData.Username);
+                    if (registrationResult.Errors != null && registrationResult.Errors.Any())
+                    {
+                        string errorMessages = string.Join("\n- ", registrationResult.Errors.Select(err => err.Description));
+                        MessageBox.Show($"Rejestracja nie powiodła się z powodu:\n{errorMessages}", "Błąd rejestracji", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Rejestracja nie powiodła się. Sprawdź wprowadzone dane lub spróbuj ponownie później.", "Błąd rejestracji", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby rejestracji użytkownika {Username}.",
-                    sendingDataRegistration.Username);
-                MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK,
+                    registrationData.Username);
+                MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji podczas rejestracji.", "Błąd krytyczny", MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }

@@ -139,7 +139,7 @@
                                           Height="30"
                                           x:Name="UserNameRoundedTxtBoxLogin"
                                           CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" />
+                                          Text="{Binding Username, Mode=TwoWay}" />
 
 
                 </StackPanel>
@@ -214,7 +214,7 @@
 
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20"
-                        Name="RegisterStackPanel" Visibility="Hidden">
+                        Name="RegisterStackPanel" Visibility="Visible">
 
 
                 <StackPanel Orientation="Vertical">
@@ -245,11 +245,8 @@
                            Height="22"
                            Margin="0,05,0,0" />
 
-                    <local:RoundedTextBox Width="200"
-                                          Height="30"
-                                          x:Name="UserNameRoundedTxtBoxRegistration"
-                                          CornerRadius="0,0,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" />
+                    <local:RoundedTextBox Width="200" Height="30" x:Name="UserNameRoundedTxtBoxRegistration"
+                                          CornerRadius="0,0,0,5" Text="{Binding RegisterUsername, Mode=TwoWay}" />
                     <Label Content="E-mail:"
 
                            Foreground="#F3F9D2"
@@ -262,11 +259,8 @@
 
                            Height="22" />
 
-                    <local:RoundedTextBox Width="200"
-                                          Height="30"
-                                          x:Name="UserEmailRoundedTxtBoxRegistration"
-                                          CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" />
+                    <local:RoundedTextBox Width="200" Height="30" x:Name="UserEmailRoundedTxtBoxRegistration"
+                                          CornerRadius="0,5,0,5" Text="{Binding RegisterEmail, Mode=TwoWay}" />
 
                     <Label Content="Hasło:"
 
@@ -319,7 +313,7 @@
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
-                        Name="PasswordResetStackPanel" Visibility="Visible">
+                        Name="PasswordResetStackPanel" Visibility="Hidden">
 
 
                 <StackPanel Orientation="Vertical">
