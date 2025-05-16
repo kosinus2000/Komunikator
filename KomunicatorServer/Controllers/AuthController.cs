@@ -12,11 +12,14 @@ public class AuthController : Controller
 {
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<AuthController> _logger;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger)
+    public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger,
+        UserManager<IdentityUser> userManager)
     {
         _signInManager = signInManager;
         _logger = logger;
+        _userManager = userManager;
     }
 
     [HttpPost]
@@ -76,6 +79,48 @@ public class AuthController : Controller
             _logger.LogError(e, "Błąd krytyczny podczas logowania użytkownika {Username}", model.Username);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { Message = "Wystąpił wewnętrzny błąd serwera. Spróbuj ponownie później." });
+        }
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register ([FromBody] RegistationRequestModel model)
+    {
+        _logger.LogInformation("Otrzymano żądanie POST na /api/auth/register dla użytkownika {Username}",
+            model?.Username ?? "[brak nazwy]");
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            IdentityUser user = new IdentityUser
+            {
+                UserName = model.Username,
+                Email = model.Email
+               
+            };
+            IdentityResult result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Rejsctacja zakończona sukcesem dla użytkownika {Username}", model.Username);
+                return Ok();
+            }
+            else 
+            {
+                _logger.LogWarning("Nieudana rejestracja dla użytkownika {Username}. Błędy:", model.Username);
+                foreach (var error in result.Errors)
+                {
+                    _logger.LogWarning($"- {error.Description}");
+                }
+                return BadRequest(result.Errors);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Wystąpił błąd podczas rejestracji użytkownika {Username}.", model.Username);
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Wystąpił błąd serwera podczas rejestracji." });
         }
     }
 }

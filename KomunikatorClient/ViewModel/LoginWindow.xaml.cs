@@ -14,7 +14,6 @@ using Serilog;
 
 namespace Komunikator;
 
-
 public enum View
 {
     Login,
@@ -24,11 +23,11 @@ public enum View
 
 public partial class LoginWindow : Window
 {
-    
     // --- Zarządzanie oknami ---
-    
-    
+
+
     private View _view = View.Login;
+
     public View View
     {
         get => _view;
@@ -62,9 +61,8 @@ public partial class LoginWindow : Window
             PasswordResetStackPanel.Visibility = Visibility.Visible;
             backBtn.Visibility = Visibility.Visible;
         }
-       
     }
-    
+
     public LoginWindow()
     {
         InitializeComponent();
@@ -72,25 +70,26 @@ public partial class LoginWindow : Window
         btnMaximize.Visibility = Visibility.Hidden;
     }
 //--------------------------------------------------------------------------------------------------------------------
-    
+
     // --- Metody dla logowaina ---
     private async void btnLogin_Click(object sender, RoutedEventArgs e)
     {
         // --- Logowanie ---
         string userNameLogin = UserNameRoundedTxtBoxLogin.Text;
         string userPasswordLogin = UserPasswordRoundedTxtBoxLogin.Password;
-        
-        
+
+
         // --- Resetowanie hasła
         string userEmailPasswordReset = UserEmailRoundedTxtBoxPasswordReset.Text;
-        
+
         LoginRequestModel sendingDataLogin = new LoginRequestModel
         {
             Username = userNameLogin,
             Password = userPasswordLogin
         };
-        
-        Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}", sendingDataLogin.Username);
+
+        Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}",
+            sendingDataLogin.Username);
 
         AuthService authService = new AuthService();
         try
@@ -119,27 +118,61 @@ public partial class LoginWindow : Window
         }
     }
     //-----------------------------------------------------------------------------------------------------------------
-    
+
     // --- Metody dla rejestracji ---
-    private void btnRegister_Click(object sender, RoutedEventArgs e)
+    private async void btnRegister_Click(object sender, RoutedEventArgs e)
     {
         string userNameRegistration = UserNameRoundedTxtBoxRegistration.Text;
         string userEmailRegistration = UserEmailRoundedTxtBoxRegistration.Text;
         string userPasswordRegistration = UserPasswordRoundedTxtBoxRejestration.Password;
         string userPasswordConfirmation = UserPasswordRoundedTxtBoxRejestrationRepeat.Password;
-        
-        RegistrationReguestModel sendingDataRegistration = new RegistrationReguestModel
+
+        RegisterRequestModel sendingDataRegistration = new RegisterRequestModel
         {
             Username = userNameRegistration,
             Email = userEmailRegistration,
             Password = userPasswordRegistration
         };
+        Log.Information("LoginWindow: Przygotowano dane do rejestracji dla użytkownika {UserName}",
+            sendingDataRegistration.Username);
+
+        AuthService authService = new AuthService();
+        if (userPasswordRegistration == userPasswordConfirmation)
+        {
+            try
+            {
+                bool respondSuccesed = await authService.RegisterAsync(sendingDataRegistration);
+                if (respondSuccesed)
+                {
+                    Log.Information("LoginWindow: Rejestracja zakończone sukcesem dla użytkownika {Username}!",
+                        sendingDataRegistration.Username);
+                    MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                    SetView(View.Login);
+                }
+                else
+                {
+                    Log.Warning("LoginWindow: Rejestracja nieudane dla użytkownika {Username}.",
+                        sendingDataRegistration.Username);
+                    MessageBox.Show(
+                        "Rejestracja nie powiodło się. Sprawdź wprowadzone dane lub spróbuj ponownie później.",
+                        "Błąd logowania", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "LoginWindow: Wystąpił błąd podczas próby rejestracji użytkownika {Username}.",
+                    sendingDataRegistration.Username);
+                MessageBox.Show("Wystąpił nieprzewidziany błąd aplikacji. ", "Błąd krytyczny", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+        else
+        {
+            MessageBox.Show("Hasła różnią się od siebie", "Uwaga", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 
-    
-    
-    
-    
+
     private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         this.DragMove();
@@ -181,7 +214,7 @@ public partial class LoginWindow : Window
     private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e)
     {
     }
-    
+
     private void BackButton_Click(object sender, RoutedEventArgs e)
     {
         SetView(View.Login);
@@ -189,7 +222,6 @@ public partial class LoginWindow : Window
 
     private void btnPasswordReset_Click(object sender, RoutedEventArgs e)
     {
-        
     }
 
     private void btnRessetPasswordSend_Click(object sender, RoutedEventArgs e)
