@@ -25,11 +25,6 @@ public enum View
 public partial class LoginWindow : Window
 {
     // --- Zarządzanie oknami ---
-
-    public string RegisterUsername { get; set; }
-    public string RegisterEmail { get; set; }
-
-
     private View _view = View.Login;
 
     public View View
@@ -42,7 +37,7 @@ public partial class LoginWindow : Window
     {
         if (view == View.Login)
         {
-            Height = 300;
+            Height = 320;
             LoginStackPanel.Visibility = Visibility.Visible;
             RegisterStackPanel.Visibility = Visibility.Hidden;
             PasswordResetStackPanel.Visibility = Visibility.Hidden;
@@ -52,7 +47,7 @@ public partial class LoginWindow : Window
 
         else if (view == View.Register)
         {
-            Height = 350;
+            Height = 370;
             LoginStackPanel.Visibility = Visibility.Hidden;
             RegisterStackPanel.Visibility = Visibility.Visible;
             PasswordResetStackPanel.Visibility = Visibility.Hidden;
@@ -128,8 +123,8 @@ public partial class LoginWindow : Window
     private async void btnRegister_Click(object sender, RoutedEventArgs e)
     {
         Log.Information("btnRegister_Click: Próba pobrania danych z formularza rejestracji.");
-        string userNameRegistration = RegisterUsername;
-        string userEmailRegistration = RegisterEmail;
+        string userNameRegistration = UserNameRoundedTxtBoxRegistration.Text;
+        string userEmailRegistration = UserEmailRoundedTxtBoxRegistration.Text; 
         string userPasswordRegistration = UserPasswordRoundedTxtBoxRejestration.Password;
         string userPasswordConfirmation = UserPasswordRoundedTxtBoxRejestrationRepeat.Password;
         Log.Information($"btnRegister_Click: UserName: '{userNameRegistration}', Email: '{userEmailRegistration}', Password: '{userPasswordRegistration}', ConfirmPassword: '{userPasswordConfirmation}'");
@@ -240,5 +235,15 @@ public partial class LoginWindow : Window
     private void btnRessetPasswordSend_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show("Resetowanie hasła... (tu dodaj swój kod)");
+    }
+
+    private void UserNameRoundedTxtBoxRegistration_Loaded(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void UserNameRoundedTxtBoxRegistration_TextChanged(object sender, TextChangedEventArgs e)
+    {
+
     }
 }
