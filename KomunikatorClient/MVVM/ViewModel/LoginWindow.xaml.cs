@@ -1,19 +1,12 @@
-﻿using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using KomunikatorClient.Models;
 using KomunikatorClient.Services;
 using Serilog;
 using static KomunikatorClient.Services.AuthService;
 
-namespace Komunikator;
+namespace KomunikatorClient.MVVM.ViewModel;
 
 public enum View
 {
@@ -67,7 +60,8 @@ public partial class LoginWindow : Window
     {
         InitializeComponent();
         SetView(View.Login);
-        btnMaximize.Visibility = Visibility.Hidden;
+        btnMaximize.IsEnabled = false;
+        
     }
 //--------------------------------------------------------------------------------------------------------------------
 
@@ -100,7 +94,7 @@ public partial class LoginWindow : Window
             {
                 Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
                     sendingDataLogin.Username);
-                MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+              
                 ListWindow listWindow = new ListWindow();
                 listWindow.Show();
                 this.Close();
