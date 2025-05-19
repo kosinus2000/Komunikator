@@ -101,6 +101,9 @@ public partial class LoginWindow : Window
                 Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
                     sendingDataLogin.Username);
                 MessageBox.Show("Logowanie pomyślne!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                ListWindow listWindow = new ListWindow();
+                listWindow.Show();
+                this.Close();
             }
             else
             {
