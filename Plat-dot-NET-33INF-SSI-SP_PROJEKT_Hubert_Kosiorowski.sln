@@ -5,7 +5,7 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KomunikatorShared", "KomunikatorShared\KomunikatorShared.csproj", "{EAD953C0-25C4-4D3C-8CDA-6F21480EF1A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KomunicatorServer", "KomunicatorServer\KomunicatorServer.csproj", "{B416B0ED-851C-4F4C-8EC2-4B5D033B9982}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KomunikatorServer", "KomunicatorServer\KomunikatorServer.csproj", "{B416B0ED-851C-4F4C-8EC2-4B5D033B9982}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EAD953C0-25C4-4D3C-8CDA-6F21480EF1A6} = {EAD953C0-25C4-4D3C-8CDA-6F21480EF1A6}
 	EndProjectSection
