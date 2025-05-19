@@ -4,13 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Komunikator"
-
         mc:Ignorable="d"
         SizeToContent="Manual"
         ShowInTaskbar="True"
         Title="Logowanie"
-        Height="300"
-        Width="300">
+        Height="350"
+        Width="300"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="{x:Null}"
+        AllowsTransparency="True">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -25,24 +29,52 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="ThemedTextBoxStyle" TargetType="{x:Type TextBox}">
+                <Setter Property="Background" Value="#F3F9D2" />
+                <Setter Property="BorderBrush" Value="#6A994E" />
+                <Setter Property="Foreground" Value="#333333" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="5,2" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="12" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="#B36A994E" />
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                        <Setter Property="BorderBrush" Value="#B36A994E" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="ThemedPasswordBoxStyle" TargetType="{x:Type PasswordBox}">
+                <Setter Property="Background" Value="#F3F9D2" />
+                <Setter Property="BorderBrush" Value="#6A994E" />
+                <Setter Property="Foreground" Value="#333333" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="5,2" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="12" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="#B36A994E" />
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                        <Setter Property="BorderBrush" Value="#B36A994E" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </Window.Resources>
 
-
-    <Window.WindowStyle>None</Window.WindowStyle>
-    <Window.ResizeMode>NoResize</Window.ResizeMode>
-    <Window.WindowStartupLocation>CenterScreen</Window.WindowStartupLocation>
-    <Window.Background>
-        <x:Null></x:Null>
-    </Window.Background>
-    <Window.AllowsTransparency>True</Window.AllowsTransparency>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--nagłówek-->
         <Border Background="#B26A994E" CornerRadius="15,15,0,0">
             <Grid Background="Transparent">
                 <Grid.ColumnDefinitions>
@@ -62,109 +94,74 @@
                         <ColumnDefinition Width="{Binding ElementName=grdHeader, Path=ActualHeight}" />
                     </Grid.ColumnDefinitions>
                     <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource vanilla_button}">
-
                         <Viewbox>
-                            <Image Source="/Images/icons8-minimize-window-96.png"></Image>
+                            <Image Source="/Images/icons8-minimize-window-96.png" Opacity="0.8"></Image>
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnMaximize" Style="{StaticResource vanilla_button}" Grid.Column="1"
                             Click="btnMaximize_Click">
                         <Viewbox>
-                            <Image Source="/Images/icons8-maximize-window-96.png"></Image>
+                            <Image Source="/Images/icons8-maximize-window-96.png" Opacity="0.8"></Image>
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnClose" Style="{StaticResource vanilla_button}" Grid.Column="2"
                             Click="btnExit_Click">
                         <Viewbox>
-                            <Image Source="/Images/icons8-close-window-96.png" RenderTransformOrigin="0.078,0.078"></Image>
+                            <Image Source="/Images/icons8-close-window-96.png" RenderTransformOrigin="0.078,0.078"
+                                   Opacity="0.8">
+                            </Image>
                         </Viewbox>
                     </Button>
                 </Grid>
             </Grid>
         </Border>
 
-        <!--kod-->
         <Grid Row="1">
             <Border Background="#A7C957"
-
                     BorderBrush="#B36A994E"
-
-                    BorderThickness="5,0,5,5">
-
-
-                <Border.CornerRadius>0,0,0,15</Border.CornerRadius>
-
-
+                    BorderThickness="5,0,5,5"
+                    CornerRadius="0,0,15,15">
             </Border>
 
-
             <StackPanel HorizontalAlignment="Center"
-
                         VerticalAlignment="Center"
-
-                        Margin="20">
-
+                        Margin="20"
+                        Name="LoginStackPanel"
+                        Visibility="Hidden">
 
                 <TextBlock Text="Witaj!"
-
                            Foreground="#F3F9D2"
-
                            FontSize="26"
-
                            FontWeight="Bold"
-
                            Margin="0,0,0,20"
-
                            HorizontalAlignment="Center" />
 
-
                 <StackPanel Orientation="Vertical">
-
                     <Label Content="Nazwa użytkownika:"
-
                            Foreground="#F3F9D2"
-
                            FontSize="10"
-
                            HorizontalAlignment="Left"
-
                            VerticalAlignment="Bottom"
-
                            Height="22" />
-
-                    <local:RoundedTextBox Width="200"
-                                          Height="30"
-                                          x:Name="UserNameRoundedTxtBox"
-                                          CornerRadius="0,5,0,5"
-                                          Text="{Binding UserName, Mode=TwoWay}" Loaded="UserNameRoundedTxtBox_Loaded" />
-
-
+                    <TextBox Width="200"
+                             Height="30"
+                             x:Name="UserNameRoundedTxtBoxLogin"
+                             Style="{StaticResource ThemedTextBoxStyle}"
+                             Text="{Binding Username, Mode=TwoWay}" />
                 </StackPanel>
 
-
-                <StackPanel Orientation="Vertical" Margin="0,0,0,0">
-
+                <StackPanel Orientation="Vertical" Margin="0,10,0,0">
                     <Label Content="Hasło:"
-
                            Foreground="#F3F9D2"
-
                            FontSize="10"
-
                            HorizontalAlignment="Left"
-
                            VerticalAlignment="Bottom"
-
                            Height="22" />
-
-                    <local:RoundedPasswordBox Width="200"
-                                              Height="30"
-                                              x:Name="UserPasswordRoundedTxtBox"
-                                              CornerRadius="0,5,0,5"
-                                               />
-
-
+                    <PasswordBox Width="200"
+                                 Height="30"
+                                 x:Name="UserPasswordRoundedTxtBoxLogin"
+                                 Style="{StaticResource ThemedPasswordBoxStyle}" />
                 </StackPanel>
-
 
                 <StackPanel>
                     <local:RoundedButton Width="100"
@@ -177,10 +174,10 @@
                                          FontSize="12"
                                          FontWeight="DemiBold"
                                          Foreground="#6A994E"
-                                         Margin="0,10,0,0"
+                                         Margin="0,20,0,0"
                                          Click="btnLogin_Click" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
                     <Label Content="Resetuj hasło"
                            FontSize="8" FontWeight="DemiBold"
                            Foreground="#6A994E"
@@ -196,9 +193,139 @@
                            Cursor="Hand"
                            MouseDown="Label_Zarejestruj_Click" />
                 </StackPanel>
-
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="10" Background="Transparent">
+                <Button Click="BackButton_Click" OpacityMask="Black" Background="Transparent"
+                        BorderBrush="Transparent">
+                    <Image x:Name="backBtn" Source="/Images/icons8-back-arrow-32 (1).png" Width="24" Height="24"
+                           Opacity="0.7">
+                    </Image>
+                </Button>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20,10,20,20"
+                        Name="RegisterStackPanel" Visibility="Visible">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Dodaj konto!"
+                               Foreground="#F3F9D2"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10"
+                               HorizontalAlignment="Center" />
+
+                    <!-- W RegisterStackPanel -->
+                    <StackPanel Margin="0,0,0,5">
+                        <Label Content="Nazwa użytkownika:"
+                               Foreground="#F3F9D2"
+                               FontSize="10"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Bottom"
+                               Height="22" />
+                        <TextBox Width="200" Height="30"
+                                 x:Name="UserNameRoundedTxtBoxRegistration"
+                                 Style="{StaticResource ThemedTextBoxStyle}"
+                                 Loaded="UserNameRoundedTxtBoxRegistration_Loaded" />
+                        <!-- Usunięto: Text="{Binding RegisterUsername, Mode=TwoWay}" -->
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,5">
+                        <Label Content="E-mail:"
+                               Foreground="#F3F9D2"
+                               FontSize="10"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Bottom"
+                               Height="22" />
+                        <TextBox Width="200" Height="30"
+                                 x:Name="UserEmailRoundedTxtBoxRegistration"
+                                 Style="{StaticResource ThemedTextBoxStyle}" />
+                        <!-- Usunięto: Text="{Binding RegisterEmail, Mode=TwoWay}" -->
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,5">
+                        <Label Content="Hasło:"
+                               Foreground="#F3F9D2"
+                               FontSize="10"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Bottom"
+                               Height="22" />
+                        <PasswordBox Width="200"
+                                     Height="30"
+                                     x:Name="UserPasswordRoundedTxtBoxRejestration"
+                                     Style="{StaticResource ThemedPasswordBoxStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,0,5">
+                        <Label Content="Powtórz hasło:"
+                               Foreground="#F3F9D2"
+                               FontSize="10"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Bottom"
+                               Height="22" />
+                        <PasswordBox Width="200"
+                                     Height="30"
+                                     x:Name="UserPasswordRoundedTxtBoxRejestrationRepeat"
+                                     Style="{StaticResource ThemedPasswordBoxStyle}" />
+                    </StackPanel>
+
+                    <local:RoundedButton Width="100"
+                                         Height="30"
+                                         ButtonContent="Rejestracja"
+                                         CornerRadius="0,5,0,5"
+                                         Background="#F3F9D2"
+                                         BorderBrush="#6A994E"
+                                         BorderThickness="3"
+                                         FontSize="12"
+                                         FontWeight="DemiBold"
+                                         Foreground="#6A994E"
+                                         Margin="0,15,0,0"
+                                         Click="btnRegister_Click" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"
+                        Name="PasswordResetStackPanel" Visibility="Hidden">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Podaj E-mail"
+                               Foreground="#F3F9D2"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="0,0,0,0"
+                               HorizontalAlignment="Center" />
+                    <TextBlock
+                        Text="Podaj adres E-mail, aby wygenerować link, po którym możliwe będzie ustawienie nowego hasła"
+                        Foreground="#F3F9D2"
+                        TextWrapping="Wrap"
+                        TextAlignment="Center"
+                        FontWeight="Regular"
+                        Margin="10,15,10,10"
+                        Opacity="0.975" FontSize="11" HorizontalAlignment="Center" />
+                    <Label Content="E-mail:"
+                           Foreground="#F3F9D2"
+                           FontSize="10"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Height="22"
+                           Margin="27,5,0,0" />
+                    <TextBox Width="200"
+                             Height="30"
+                             x:Name="UserEmailRoundedTxtBoxPasswordReset"
+                             Style="{StaticResource ThemedTextBoxStyle}"
+                             Text="{Binding UserName, Mode=TwoWay}" />
+                    <local:RoundedButton Width="100"
+                                         Height="30"
+                                         ButtonContent="Wyślij"
+                                         CornerRadius="0,5,0,5"
+                                         Background="#F3F9D2"
+                                         BorderBrush="#6A994E"
+                                         BorderThickness="3"
+                                         FontSize="12"
+                                         FontWeight="DemiBold"
+                                         Foreground="#6A994E"
+                                         Margin="0,10,0,0"
+                                         Click="btnRessetPasswordSend_Click" />
+                </StackPanel>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

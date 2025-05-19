@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace KomunikatorServer.Data
 
 {
-    public class ApplicationDbContext : IdentityDbContext<User>
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }

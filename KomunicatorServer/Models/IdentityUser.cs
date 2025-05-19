@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Identity;
 
 namespace KomunikatorServer.Models
 {
-    public class User : IdentityUser
+    public class IdentityUser : Microsoft.AspNetCore.Identity.IdentityUser
     {
         [MaxLength(50)]
         public string? DisplayName { get; set; }
 
         public DateTime RegistrationDate { get; set; }
 
-        public User()
+        public IdentityUser()
         {
             RegistrationDate = DateTime.UtcNow;
         }

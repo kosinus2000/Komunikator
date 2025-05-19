@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\icons8-back-arrow-32 %281%29.png" />
+    <None Remove="Images\icons8-back-arrow-32.png" />
     <None Remove="Images\icons8-close-window-96.png" />
     <None Remove="Images\icons8-maximize-window-96.png" />
     <None Remove="Images\icons8-minimize-window-96.png" />
@@ -25,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\icons8-back-arrow-32 (1).png" />
+    <Resource Include="Images\icons8-back-arrow-32.png" />
     <Resource Include="Images\icons8-close-window-96.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
