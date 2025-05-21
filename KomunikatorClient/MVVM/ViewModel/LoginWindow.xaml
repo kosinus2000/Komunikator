@@ -86,7 +86,14 @@
                 <Grid x:Name="grdHeader"
                       PreviewMouseLeftButtonDown="UIElement_OnPreviewMouseLeftButtonDown"
                       Background="Transparent">
-                    <Label VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Content="Logowanie" FontWeight="SemiBold" ></Label>
+                    <Label VerticalAlignment="Center" 
+                           HorizontalAlignment="Left" 
+                           Margin="10,0,0,0" 
+                           Content="Logowanie" 
+                           FontWeight="SemiBold" 
+                           Foreground="#F2E8CF">
+
+                    </Label>
                 </Grid>
 
                 <Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0">

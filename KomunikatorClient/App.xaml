@@ -4,17 +4,15 @@
              xmlns:local="clr-namespace:KomunikatorClient"
              StartupUri="/MVVM/ViewModel/LoginWindow.xaml">
     <Application.Resources>
-        <Style x:Key="vanilla_button" TargetType="Button">
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    
+
+
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/VanillaStyle.xaml" />
+
+                <ResourceDictionary Source="Themes/ContactCard.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
     </Application.Resources>
 </Application>

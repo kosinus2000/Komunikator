@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="PrimaryColor">#FF007ACC</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+    <Style TargetType="{x:Type Button}" x:Key="TitleBarButtonStyle"></Style>
+    <Style x:Key="vanilla_button" TargetType="Button"></Style>
+
+</ResourceDictionary>
