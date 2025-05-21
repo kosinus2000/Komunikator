@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:komunikatorClient="clr-namespace:KomunikatorClient"
         xmlns:viewModel="clr-namespace:KomunikatorClient.MVVM.ViewModel"
+        xmlns:model="clr-namespace:KomunikatorClient.MVVM.Model"
+        xmlns:view="clr-namespace:KomunikatorClient.MVVM.View"
         mc:Ignorable="d"
         Title="MyChat"
         Height="500"
@@ -19,7 +21,7 @@
 
 
     <Window.DataContext>
-        <viewModel:MainViewModel />
+        <view:MainViewModel />
     </Window.DataContext>
 
 
@@ -78,9 +80,8 @@
                     </Grid.ColumnDefinitions>
                     <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource vanilla_button}">
                         <Viewbox>
-                            <Image Source="/Images/icons8-minimize-window-96.png" 
-                                   Opacity="0.8"
-                                   />
+                            <Image Source="/Images/icons8-minimize-window-96.png"
+                                   Opacity="0.8" />
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnMaximize" Style="{StaticResource vanilla_button}"
@@ -125,19 +126,25 @@
                             </RowDefinition>
 
                         </Grid.RowDefinitions>
+                        <Border CornerRadius="5,5,5,5" 
+                                Margin="15,5,0,0"
+                                BorderBrush="#B26A994E"
+                                BorderThickness="3">
+                            <Label Content="Kontakty"
+                                   VerticalAlignment="Center"
 
-                        <Label Content="Kontakty"
-                               VerticalAlignment="Center"
-                               FontWeight="Medium"
-                               Margin="5"
-                               Foreground="#386641">
+                                   FontWeight="Medium"
+                                   Foreground="#386641">
 
-                        </Label>
+                            </Label>
+                        </Border>
                         <ListView ItemsSource="{Binding Contacts}"
                                   Background="Transparent"
                                   BorderThickness="0"
+                                  BorderBrush="#B26A994E"
                                   Grid.Row="1"
-                                  ItemContainerStyle="{StaticResource ContactCard}">
+                                  ItemContainerStyle="{StaticResource ContactCard}"
+                                  Margin="15,0,0,0" SelectionChanged="ListView_SelectionChanged">
 
                         </ListView>
 

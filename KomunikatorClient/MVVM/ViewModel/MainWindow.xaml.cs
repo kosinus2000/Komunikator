@@ -20,17 +20,30 @@ namespace KomunikatorClient.MVVM.ViewModel
 
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            this.WindowState = WindowState.Minimized;
         }
 
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            switch (this.WindowState)
+            {
+                case WindowState.Normal:
+                    this.WindowState = WindowState.Maximized;
+                    break;
+                case WindowState.Maximized:
+                    this.WindowState = WindowState.Normal;
+                    break;
+            }
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            this.Close();
+        }
+
+        private void ListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

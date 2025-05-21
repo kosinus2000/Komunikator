@@ -12,8 +12,13 @@
     <None Remove="Images\icons8-back-arrow-32 %281%29.png" />
     <None Remove="Images\icons8-back-arrow-32.png" />
     <None Remove="Images\icons8-close-window-96.png" />
+    <None Remove="Images\icons8-male-user-16.png" />
+    <None Remove="Images\icons8-male-user-32.png" />
+    <None Remove="Images\icons8-male-user-64.png" />
+    <None Remove="Images\icons8-male-user-96.png" />
     <None Remove="Images\icons8-maximize-window-96.png" />
     <None Remove="Images\icons8-minimize-window-96.png" />
+    <None Remove="Images\pngwing.com.png" />
     <None Remove="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview %281%29.png" />
   </ItemGroup>
 
@@ -32,6 +37,10 @@
     <Resource Include="Images\icons8-close-window-96.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\icons8-male-user-16.png" />
+    <Resource Include="Images\icons8-male-user-32.png" />
+    <Resource Include="Images\icons8-male-user-64.png" />
+    <Resource Include="Images\icons8-male-user-96.png" />
     <Resource Include="Images\icons8-maximize-window-96.png" />
     <Resource Include="Images\icons8-minimize-window-96.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -39,11 +48,6 @@
     <Resource Include="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview (1).png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="MVVM\Model\" />
-    <Folder Include="MVVM\View\" />
   </ItemGroup>
 
 </Project>
