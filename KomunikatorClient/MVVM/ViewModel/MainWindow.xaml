@@ -114,9 +114,11 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="250"></ColumnDefinition>
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
 
                     <Grid Background="#98BE3E"
+                          Margin="0,0,5,0"
                           Grid.Row="1">
 
                         <Grid.RowDefinitions>
@@ -132,7 +134,7 @@
                                 BorderThickness="3">
                             <Label Content="Kontakty"
                                    VerticalAlignment="Center"
-
+                                   Background="#8BAF36"
                                    FontWeight="Medium"
                                    Foreground="#386641">
 
@@ -145,7 +147,7 @@
                                   BorderBrush="#8BAF36"
                                   Grid.Row="1"
                                   ItemContainerStyle="{StaticResource ContactCard}"
-                                  Margin="15,0,15,0" 
+                                  Margin="15,0,15,0"
                                   SelectionChanged="ListView_SelectionChanged">
 
                         </ListView>
@@ -167,9 +169,9 @@
                                        Foreground="#F2E8CF"
                                        FontWeight="SemiBold"
                                        Margin="0,-5,0,-5">
-                                        
 
-                                </Label >
+
+                                </Label>
                                 <Label Content="Custom Status"
                                        Foreground="White"
                                        FontWeight="Light" FontSize="10"
@@ -180,6 +182,96 @@
                         </StackPanel>
 
                     </Grid>
+
+                    <Grid Grid.Column="1"
+                          Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50" />
+                            <RowDefinition />
+                            <RowDefinition Height="80" />
+                        </Grid.RowDefinitions>
+
+                        <Border>
+                            <Border Margin="5"
+                                    CornerRadius="7"
+                                    Background="#6B8F17">
+                                <Grid HorizontalAlignment="Stretch">
+
+                                    <Label Content="@Username"
+                                           Foreground="#F2E8CF"
+                                           FontWeight="Bold"
+                                           Margin="5,0,5,0"
+                                           VerticalAlignment="Center">
+                                    </Label>
+
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Right">
+                                        <Image Width="20"
+                                               Height="20"
+                                               RenderOptions.BitmapScalingMode="Fant"
+                                               Source="../../Images/icons8-more-48.png"
+                                               Margin="10,0,10,0"
+                                               Opacity="0.7" />
+
+                                    </StackPanel>
+
+                                </Grid>
+                            </Border>
+                        </Border>
+
+
+                        <ListView ItemsSource="{Binding SelectedContact.Messages}"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  ItemContainerStyle="{StaticResource ChatItem}"
+                                  Margin="8,0,0,0"
+                                  Grid.Row="1">
+
+                        </ListView>
+
+                        <Grid Grid.Row="2"
+                              Margin="3,0,3,3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="80" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Row="1"
+                                       Height="50"
+                                       Text="Message @Username"
+                                       Style="{StaticResource MessageBox}"
+                                       Grid.ColumnSpan="2"
+                                       Background="White"
+                                       >
+
+                            </TextBox>
+
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Grid.Column="1"
+                                        Margin="0,0,16,0">
+
+                                <Image Source="../../Images/icons8-add-48.png"
+                                       Width="20"
+                                       Height="20"
+                                       RenderOptions.BitmapScalingMode="Fant"
+                                       Margin="5,5,5,0" Opacity="0.7">
+
+                                </Image>
+
+                                <Image Source='../../Images/icons8-send-48.png'
+                                       Width="20"
+                                       Height="20"
+                                       RenderOptions.BitmapScalingMode="Fant"
+                                       Margin="5,5,5,0" Opacity="0.7">
+
+                                </Image>
+
+                            </StackPanel>
+
+                        </Grid>
+                    </Grid>
+
                 </Grid>
             </Border>
         </Grid>

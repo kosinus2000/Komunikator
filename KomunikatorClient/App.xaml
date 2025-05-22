@@ -11,6 +11,9 @@
                 <ResourceDictionary Source="Themes/VanillaStyle.xaml" />
 
                 <ResourceDictionary Source="Themes/ContactCard.xaml" />
+                <ResourceDictionary Source="Themes/ChatItem.xaml" />
+                <ResourceDictionary Source="Themes/MessageBox.xaml" />
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 
