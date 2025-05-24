@@ -23,8 +23,6 @@ public partial class MainViewModel : ObservableObject
             OnPropertyChanged();
         }
     }
-    
-
 
     private string _message;
 
