@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
-namespace Komunikator
+namespace KomunikatorClient.MVVM.ViewModel
 {
     /// <summary>
     /// Interaction logic for ListWindow.xaml
@@ -31,17 +20,30 @@ namespace Komunikator
 
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            this.WindowState = WindowState.Minimized;
         }
 
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            switch (this.WindowState)
+            {
+                case WindowState.Normal:
+                    this.WindowState = WindowState.Maximized;
+                    break;
+                case WindowState.Maximized:
+                    this.WindowState = WindowState.Normal;
+                    break;
+            }
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            this.Close();
+        }
+
+        private void ListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

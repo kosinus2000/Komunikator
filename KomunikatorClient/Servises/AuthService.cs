@@ -31,6 +31,8 @@ namespace KomunikatorClient.Services
             {
                 // serializacja Jsona -> zbudowanie Jsona z dostępnych dannych
                 string jsonPayload = System.Text.Json.JsonSerializer.Serialize(loginRequestModel);
+
+
                 /*Log.Debug("AuthService: Wysyłamy Json payload {Payload}", jsonPayload);
 
                 // utworzenie ciała zapytania z Jasonem, kodowaniem  oraz ścieżką endpointa
