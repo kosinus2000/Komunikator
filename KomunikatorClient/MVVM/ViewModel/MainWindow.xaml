@@ -142,6 +142,7 @@
                         </Border>
 
                         <ListView ItemsSource="{Binding Contacts}"
+                                  SelectedItem="{Binding SelectedContact}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   BorderBrush="#8BAF36"

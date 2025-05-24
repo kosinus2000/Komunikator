@@ -1,4 +1,5 @@
-<UserControl x:Class="KomunikatorClient.MVVM.View.MainViewModel"
+<core:ObservableObject x:Class="KomunikatorClient.MVVM.View.MainViewModel"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-</UserControl>
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:core="clr-namespace:KomunikatorClient.Core">
+</core:ObservableObject>
