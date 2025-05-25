@@ -21,31 +21,38 @@
                             CornerRadius="4"
                             Margin="8,2,8,2">
 
-                        <StackPanel Orientation="Horizontal"
-                                    Margin="10,0,0,0">
+                        <Grid Margin="10,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                            <Ellipse Width="30"
-                                     Height="30">
-                                <Ellipse.Fill>
-                                    <ImageBrush ImageSource="{ Binding ImageSource}">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="30"
+                                         Height="30">
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="{Binding ImageSource}"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
 
-                                    </ImageBrush>
-                                </Ellipse.Fill>
-                            </Ellipse>
-
-
-                            <StackPanel>
-                                <Label Content="{Binding Username }"
-                                       Foreground="White">
-
-                                </Label>
-                                <Label Content="{Binding LastMessage }"
-                                       Foreground="#F3F9D2"
-                                       FontSize="10">
-
-                                </Label>
+                                <StackPanel VerticalAlignment="Center" Margin="5,0,0,0">
+                                    <Label Content="{Binding Username}"
+                                           Foreground="White"/>
+                                    <Label Content="{Binding LastMessage}"
+                                           Foreground="#F3F9D2"
+                                           FontSize="10"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+
+                            <Image Grid.Column="1" 
+                                   Width="20"
+                                   Height="20"
+                                   RenderOptions.BitmapScalingMode="Fant"
+                                   Source="../../Images/icons8-more-48.png"
+                                   Margin="10,0,10,0" Opacity="0.5"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                        </Grid>
 
                     </Border>
                 </ControlTemplate>
