@@ -181,8 +181,7 @@
                                        Margin="15,0,0,0"
                                        VerticalAlignment="Center" 
                                        RenderOptions.BitmapScalingMode="Fant"
-                                       Source="../../Images/icons8-male-user-64.png"
-                                       Opacity="0.5" />
+                                       Source="../../Images/icons8-male-user-64.png" />
                                 <StackPanel VerticalAlignment="Center">
                                     <Label Content="Username"
                                            Foreground="#F2E8CF"

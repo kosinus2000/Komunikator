@@ -22,6 +22,7 @@
     <None Remove="Images\icons8-maximize-window-96.png" />
     <None Remove="Images\icons8-minimize-window-96.png" />
     <None Remove="Images\icons8-more-48.png" />
+    <None Remove="Images\icons8-send-48.png" />
     <None Remove="Images\pngwing.com.png" />
     <None Remove="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview %281%29.png" />
   </ItemGroup>
@@ -53,6 +54,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\icons8-more-48.png" />
+    <Resource Include="Images\icons8-send-48.png" />
     <Resource Include="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview (1).png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
