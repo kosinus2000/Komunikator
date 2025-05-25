@@ -11,7 +11,7 @@
         Title="MyChat"
         Height="500"
         Width="800"
-        Window.Icon="../../Images/simple_green_icon_for_a_.NET_communication_application-removebg-preview (1).png"
+        Window.Icon="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
@@ -128,17 +128,33 @@
                             </RowDefinition>
 
                         </Grid.RowDefinitions>
+
                         <Border CornerRadius="5,5,5,5"
                                 Margin="15,5,15,0"
                                 BorderBrush="#B26A994E"
                                 BorderThickness="3">
-                            <Label Content="Kontakty"
-                                   VerticalAlignment="Center"
-                                   Background="#8BAF36"
-                                   FontWeight="Medium"
-                                   Foreground="#386641">
 
-                            </Label>
+                            <Grid Background="#8BAF36">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Label Grid.Column="0" Content="Kontakty"
+                                       HorizontalAlignment="Left" 
+                                       VerticalAlignment="Center" 
+                                       FontWeight="Medium"
+                                       Margin="5,0,0,0"
+                                       Foreground="#386641"/>
+
+                                <Image Grid.Column="1" Width="20"
+                                       Height="20"
+                                       Margin="0,0,7,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" RenderOptions.BitmapScalingMode="Fant"
+                                       Source="../../Images/icons8-add-48.png"
+                                       Opacity="0.5" />
+                            </Grid>
                         </Border>
 
                         <ListView ItemsSource="{Binding Contacts}"
@@ -153,34 +169,39 @@
 
                         </ListView>
 
-                        <StackPanel Grid.Row="2"
-                                    Orientation="Horizontal"
-                                    Background="#7EA328">
+                        <Grid Grid.Row="2" Background="#7EA328" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                            <Border CornerRadius="25"
-                                    Width="30"
-                                    Height="30"
-                                    Background="Aqua"
-                                    Margin="18,0,0,0">
-
-                            </Border>
-
-                            <StackPanel VerticalAlignment="Center">
-                                <Label Content="Username"
-                                       Foreground="#F2E8CF"
-                                       FontWeight="SemiBold"
-                                       Margin="0,-5,0,-5">
-
-
-                                </Label>
-                                <Label Content="Custom Status"
-                                       Foreground="White"
-                                       FontWeight="Light" FontSize="10"
-                                       Margin="0,-5,0,-5">
-
-                                </Label>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Width="30"
+                                       Height="30"
+                                       Margin="15,0,0,0"
+                                       VerticalAlignment="Center" 
+                                       RenderOptions.BitmapScalingMode="Fant"
+                                       Source="../../Images/icons8-male-user-64.png" />
+                                <StackPanel VerticalAlignment="Center">
+                                    <Label Content="Username"
+                                           Foreground="#F2E8CF"
+                                           FontWeight="SemiBold"
+                                           Margin="0,-5,0,-5" />
+                                    <Label Content="Custom Status"
+                                           Foreground="White"
+                                           FontWeight="Light" FontSize="10"
+                                           Margin="0,-5,0,-5" />
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+
+                            <Image Grid.Column="1" 
+                                   Width="20"
+                                   Height="20"
+                                   RenderOptions.BitmapScalingMode="Fant"
+                                   Source="../../Images/icons8-more-48.png"
+                                   Margin="10,0,10,0" Opacity="0.7"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
 
                     </Grid>
 
@@ -238,12 +259,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Row="1"
-                                       Height="50"
-                                       Text="Message @Username"
-                                       Style="{StaticResource MessageBox}"
-                                       Grid.ColumnSpan="2"
-                                       Background="White"
-                                       >
+                                     Height="50"
+                                     Text="Message @Username"
+                                     Style="{StaticResource MessageBox}"
+                                     Grid.ColumnSpan="2"
+                                     Background="White">
 
                             </TextBox>
 

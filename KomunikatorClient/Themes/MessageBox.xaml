@@ -19,8 +19,8 @@
                                      Background="Transparent"
                                      TextWrapping="Wrap"
                                      BorderThickness="0"
-                                     Foreground="Aquamarine"
-                                     CaretBrush="Aquamarine"
+                                     Foreground="#F3F9D2"
+                                     CaretBrush="#F3F9D2"
                                      Margin="8,0,0,0"
                                      Text="{Binding Message, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 

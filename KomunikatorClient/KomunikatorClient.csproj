@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\ChatGPT Image 25 maj 2025, 11_46_26 %281%29.png" />
+    <None Remove="Images\icons8-add-48.png" />
     <None Remove="Images\icons8-back-arrow-32 %281%29.png" />
     <None Remove="Images\icons8-back-arrow-32.png" />
     <None Remove="Images\icons8-close-window-96.png" />
@@ -20,6 +22,7 @@
     <None Remove="Images\icons8-maximize-window-96.png" />
     <None Remove="Images\icons8-minimize-window-96.png" />
     <None Remove="Images\icons8-more-48.png" />
+    <None Remove="Images\icons8-send-48.png" />
     <None Remove="Images\pngwing.com.png" />
     <None Remove="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview %281%29.png" />
   </ItemGroup>
@@ -34,6 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\ChatGPT Image 25 maj 2025, 11_46_26 (1).png" />
+    <Resource Include="Images\icons8-add-48.png" />
     <Resource Include="Images\icons8-back-arrow-32 (1).png" />
     <Resource Include="Images\icons8-back-arrow-32.png" />
     <Resource Include="Images\icons8-close-window-96.png">
@@ -49,6 +54,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\icons8-more-48.png" />
+    <Resource Include="Images\icons8-send-48.png" />
     <Resource Include="Images\simple_green_icon_for_a_.NET_communication_application-removebg-preview (1).png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
