@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using KomunikatorClient.Models;
+using KomunikatorClient.DTOs;
 using KomunikatorClient.Services;
 using Serilog;
 using static KomunikatorClient.Services.AuthService;
@@ -95,8 +95,8 @@ public partial class LoginWindow : Window
                 Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
                     sendingDataLogin.Username);
               
-                ListWindow listWindow = new ListWindow();
-                listWindow.Show();
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
                 this.Close();
             }
             else

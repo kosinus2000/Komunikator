@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 
-namespace KomunikatorServer.Models
+namespace KomunikatorServer.DTOs
 {
     public class IdentityUser : Microsoft.AspNetCore.Identity.IdentityUser
     {
-        [MaxLength(50)]
-        public string? DisplayName { get; set; }
+       
 
         public DateTime RegistrationDate { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace KomunikatorClient.Models;
+namespace KomunikatorClient.DTOs;
 
 public class IdentityErrorResponse
 {

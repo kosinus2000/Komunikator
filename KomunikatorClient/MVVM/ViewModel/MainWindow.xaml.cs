@@ -3,14 +3,13 @@ using System.Windows.Input;
 
 namespace KomunikatorClient.MVVM.ViewModel
 {
-    /// <summary>
-    /// Interaction logic for ListWindow.xaml
-    /// </summary>
-    public partial class ListWindow : Window
+    
+    public partial class MainWindow : Window
     {
-        public ListWindow()
+        public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new MainViewModel();
         }
 
         private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

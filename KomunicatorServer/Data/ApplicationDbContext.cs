@@ -1,4 +1,4 @@
-﻿using KomunikatorServer.Models;
+﻿using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

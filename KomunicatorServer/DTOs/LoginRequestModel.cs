@@ -1,4 +1,4 @@
-﻿namespace KomunikatorServer.Models;
+﻿namespace KomunikatorServer.DTOs;
 
 public class LoginRequestModel
 {

@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using KomunikatorServer.Data;
-using KomunikatorServer.Models;
 using Microsoft.AspNetCore.Identity;
-using IdentityUser = KomunikatorServer.Models.IdentityUser;
+using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
 
 namespace KomunicatorServer
 {

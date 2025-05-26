@@ -21,8 +21,18 @@ public partial class MainViewModel : ObservableObject
         {
             _selectedContact = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(DisplayedContactName));
         }
     }
+    
+    public string DisplayedContactName
+    {
+        get
+        {
+            return _selectedContact?.Username ?? "@UserName"; 
+        }
+    }
+    
 
     private string _message;
 

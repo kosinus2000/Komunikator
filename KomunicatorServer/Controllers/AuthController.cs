@@ -1,8 +1,8 @@
-﻿using KomunikatorServer.Models;
+﻿using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using IdentityUser = KomunikatorServer.Models.IdentityUser;
+using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
 
 namespace KomunicatorServer.Controllers;
 
@@ -48,12 +48,37 @@ public class AuthController : Controller
         try
         {
             _logger.LogInformation("Próba weryfikacji hasła dla użytkownika: {Username}", model.Username);
-            var signInResult = await _signInManager.PasswordSignInAsync(model.Username, model.Password, false, true);
+           
+ 
+            var user = await _userManager.FindByNameAsync(model.Username);
+            if (user == null)
+            {
+                _logger.LogWarning("Próba logowania dla nieistniejącego użytkownika: {Username}",model.Username);
+                return Unauthorized(new {Message = "Nieprawidłowa nazwa użytkownika lub hasło"});
+            }
+
+
+            var signInResult = await _signInManager.PasswordSignInAsync(
+                user.UserName, 
+                model.Password,
+                isPersistent: false,
+                lockoutOnFailure: true
+            );
+
 
             if (signInResult.Succeeded)
             {
                 _logger.LogInformation("Logowanie zakończone sukcesem dla użytkownika {Username}", model.Username);
-                return Ok();
+
+                // TODO: implementacja tokena JWT
+
+                return Ok(new LoginSuccessResponse
+                {
+                    UserId = user.Id,
+                    Username = user.UserName,
+                    // TODO: Token
+                    
+                });
             }
             else if (signInResult.IsLockedOut)
             {
@@ -83,7 +108,7 @@ public class AuthController : Controller
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register ([FromBody] RegistationRequestModel model)
+    public async Task<IActionResult> Register([FromBody] RegistationRequestModel model)
     {
         _logger.LogInformation("Otrzymano żądanie POST na /api/auth/register dla użytkownika {Username}",
             model?.Username ?? "[brak nazwy]");
@@ -99,7 +124,6 @@ public class AuthController : Controller
             {
                 UserName = model.Username,
                 Email = model.Email
-               
             };
             IdentityResult result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
@@ -107,20 +131,22 @@ public class AuthController : Controller
                 _logger.LogInformation("Rejsctacja zakończona sukcesem dla użytkownika {Username}", model.Username);
                 return Ok();
             }
-            else 
+            else
             {
                 _logger.LogWarning("Nieudana rejestracja dla użytkownika {Username}. Błędy:", model.Username);
                 foreach (var error in result.Errors)
                 {
                     _logger.LogWarning($"- {error.Description}");
                 }
+
                 return BadRequest(result.Errors);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Wystąpił błąd podczas rejestracji użytkownika {Username}.", model.Username);
-            return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Wystąpił błąd serwera podczas rejestracji." });
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { Message = "Wystąpił błąd serwera podczas rejestracji." });
         }
     }
 }
