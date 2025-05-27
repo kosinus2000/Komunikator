@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         SizeToContent="Manual"
         ShowInTaskbar="True"
-        Window.Icon="../../Images/simple_green_icon_for_a_.NET_communication_application-removebg-preview (1).png"
+        Window.Icon="../../Images/"
         Title="Logowanie"
         Height="350"
         Width="300"

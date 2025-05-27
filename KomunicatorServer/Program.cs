@@ -1,6 +1,9 @@
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using KomunikatorServer.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
 
 namespace KomunicatorServer
@@ -41,6 +44,26 @@ namespace KomunicatorServer
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true, // Wa¿noœæ wystawcy tokena
+                        ValidateAudience = true, // Wa¿noœæ odbiorcy tokena
+                        ValidateLifetime = true, // Wa¿noœæ czasu ¿ycia tokena (exp, nbf)
+                        ValidateIssuerSigningKey = true, // Wa¿noœæ klucza szyfruj¹cego
+
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"], // Wczytuje z appsettings.json
+                        ValidAudience = builder.Configuration["Jwt:Audience"], // Wczytuje z appsettings.json
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])) // Wczytuje klucz z appsettings.json
+                    };
+                });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 

@@ -1,8 +1,10 @@
-﻿using KomunikatorServer.DTOs;
+﻿using System.Text;
+using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
+
 
 namespace KomunicatorServer.Controllers;
 
@@ -13,7 +15,8 @@ public class AuthController : Controller
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<AuthController> _logger;
     private readonly UserManager<IdentityUser> _userManager;
-
+    private readonly IConfiguration _configuration;
+    
     public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger,
         UserManager<IdentityUser> userManager)
     {
@@ -149,4 +152,13 @@ public class AuthController : Controller
                 new { Message = "Wystąpił błąd serwera podczas rejestracji." });
         }
     }
+
+    // private string GenerateJwtToken(KomunikatorServer.DTOs.IdentityUser user)
+    // { 
+    //     var jwtSettings = _configuration.GetSection("JwtSettings");
+    //     var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+    //     var issuer = jwtSettings["Issuer"];
+    //     var audience = jwtSettings["Audience"];
+    //
+    // }
 }
