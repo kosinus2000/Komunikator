@@ -167,10 +167,14 @@
 
                         </ListView>
 
-                        <StackPanel Grid.Row="2"
-                                    Orientation="Horizontal"
-                                    Background="#7EA328">
+                        <Grid Grid.Row="2" Background="#7EA328">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                
+                            </Grid.ColumnDefinitions>
 
+                            
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Image Width="30"
                                        Height="30"
@@ -179,17 +183,35 @@
                                        RenderOptions.BitmapScalingMode="Fant"
                                        Source="../../Images/icons8-male-user-64.png" />
                                 <StackPanel VerticalAlignment="Center">
-                                    <Label Content="Username "
+                                   
+
+                                    <!-- Kontrolka Username do uzupełnienia -->
+
+
+                                    <Label Content="Username"
                                            Foreground="#F2E8CF"
                                            FontWeight="SemiBold"
                                            Margin="0,-5,0,-5" />
                                     <Label Content="Custom Status"
                                            Foreground="White"
-                                           FontWeight="Light" FontSize="10"
+                                           FontWeight="Light" 
+                                           FontSize="10"
                                            Margin="0,-5,0,-5" />
                                 </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+
+                            
+                            <Image Grid.Column="1"
+                                   Width="20"
+                                   Height="20"
+                                   RenderOptions.BitmapScalingMode="Fant"
+                                   Source="../../Images/icons8-more-48.png"
+                                   Margin="10,0,10,0"
+                                   Opacity="0.7"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right" />
+                        </Grid>
+
                     </Grid>
 
                     <Grid Grid.Column="1"

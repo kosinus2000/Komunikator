@@ -21,11 +21,12 @@ public class AuthController : Controller
     private readonly IConfiguration _configuration;
 
     public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger,
-        UserManager<IdentityUser> userManager)
+        UserManager<IdentityUser> userManager, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _logger = logger;
         _userManager = userManager;
+        _configuration = configuration;
     }
 
     [HttpPost]
@@ -76,13 +77,13 @@ public class AuthController : Controller
             {
                 _logger.LogInformation("Logowanie zakończone sukcesem dla użytkownika {Username}", model.Username);
 
-                // TODO: implementacja tokena JWT
+                string tokenos = GenerateJwtToken(user);
 
                 return Ok(new LoginSuccessResponse
                 {
                     UserId = user.Id,
                     Username = user.UserName,
-                    // TODO: Token
+                    Token = tokenos
                 });
             }
             else if (signInResult.IsLockedOut)
@@ -162,6 +163,7 @@ public class AuthController : Controller
         var issuer = jwtSettings["Issuer"];
         var audience = jwtSettings["Audience"];
 
+        // claim, czyli to na co chcemy wystawiać token
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -169,6 +171,7 @@ public class AuthController : Controller
             new Claim(ClaimTypes.Email, user.Email)
         };
 
+        
         var claimsIdentity = new ClaimsIdentity(claims);
 
         var tokenDescriptor = new SecurityTokenDescriptor
