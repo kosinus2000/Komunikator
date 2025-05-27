@@ -1,9 +1,12 @@
-﻿using System.Text;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace KomunicatorServer.Controllers;
@@ -16,7 +19,7 @@ public class AuthController : Controller
     private readonly ILogger<AuthController> _logger;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _configuration;
-    
+
     public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger,
         UserManager<IdentityUser> userManager)
     {
@@ -51,18 +54,18 @@ public class AuthController : Controller
         try
         {
             _logger.LogInformation("Próba weryfikacji hasła dla użytkownika: {Username}", model.Username);
-           
- 
+
+
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user == null)
             {
-                _logger.LogWarning("Próba logowania dla nieistniejącego użytkownika: {Username}",model.Username);
-                return Unauthorized(new {Message = "Nieprawidłowa nazwa użytkownika lub hasło"});
+                _logger.LogWarning("Próba logowania dla nieistniejącego użytkownika: {Username}", model.Username);
+                return Unauthorized(new { Message = "Nieprawidłowa nazwa użytkownika lub hasło" });
             }
 
 
             var signInResult = await _signInManager.PasswordSignInAsync(
-                user.UserName, 
+                user.UserName,
                 model.Password,
                 isPersistent: false,
                 lockoutOnFailure: true
@@ -80,7 +83,6 @@ public class AuthController : Controller
                     UserId = user.Id,
                     Username = user.UserName,
                     // TODO: Token
-                    
                 });
             }
             else if (signInResult.IsLockedOut)
@@ -153,12 +155,37 @@ public class AuthController : Controller
         }
     }
 
-    // private string GenerateJwtToken(KomunikatorServer.DTOs.IdentityUser user)
-    // { 
-    //     var jwtSettings = _configuration.GetSection("JwtSettings");
-    //     var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
-    //     var issuer = jwtSettings["Issuer"];
-    //     var audience = jwtSettings["Audience"];
-    //
-    // }
+    private string GenerateJwtToken(KomunikatorServer.DTOs.IdentityUser user)
+    {
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+        var issuer = jwtSettings["Issuer"];
+        var audience = jwtSettings["Audience"];
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = claimsIdentity,
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = issuer,
+            Audience = audience
+        };
+
+        JwtSecurityTokenHandler securityToken = new JwtSecurityTokenHandler();
+        
+        var token = securityToken.CreateToken(tokenDescriptor);
+        var tokenString = securityToken.WriteToken(token);
+
+        return tokenString;
+    }
 }
