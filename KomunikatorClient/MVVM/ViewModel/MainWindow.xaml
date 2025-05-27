@@ -6,7 +6,7 @@
         xmlns:komunikatorClient="clr-namespace:KomunikatorClient"
         xmlns:viewModel="clr-namespace:KomunikatorClient.MVVM.ViewModel"
         xmlns:model="clr-namespace:KomunikatorClient.MVVM.Model"
-        xmlns:view="clr-namespace:KomunikatorClient.MVVM.View"
+        xmlns:view="clr-namespace:KomunikatorClient.MVVM.ViewModel"
         mc:Ignorable="d"
         Title="MyChat"
         Height="500"
@@ -21,7 +21,7 @@
 
 
     <Window.DataContext>
-        <view:MainViewModel />
+        <viewModel:MainViewModel />
     </Window.DataContext>
 
 

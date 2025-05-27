@@ -1,9 +1,8 @@
 using System.Collections.ObjectModel;
-using System.Net.Mime;
 using KomunikatorClient.Core;
 using KomunikatorClient.MVVM.Model;
 
-namespace KomunikatorClient.MVVM.View;
+namespace KomunikatorClient.MVVM.ViewModel;
 
 public partial class MainViewModel : ObservableObject
 {
