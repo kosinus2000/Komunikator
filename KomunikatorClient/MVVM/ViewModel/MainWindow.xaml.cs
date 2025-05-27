@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using KomunikatorClient.MVVM.View;
 
 namespace KomunikatorClient.MVVM.ViewModel
 {

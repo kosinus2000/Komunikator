@@ -132,13 +132,27 @@
                                 Margin="15,5,15,0"
                                 BorderBrush="#B26A994E"
                                 BorderThickness="3">
-                            <Label Content="Kontakty"
-                                   VerticalAlignment="Center"
-                                   Background="#8BAF36"
-                                   FontWeight="Medium"
-                                   Foreground="#386641">
+                            <StackPanel Background="#8BAF36">
+                                <Grid >
+                                    <Label Content="Kontakty"
+                                           VerticalAlignment="Center"
+                                           
+                                           FontWeight="Medium"
+                                           Foreground="#386641"
+                                           Margin="7,0,0,0">
 
-                            </Label>
+
+                                    </Label>
+                                    <Image Width="20"
+                                           Height="20"
+                                           Margin="0,0,7,0"
+                                           
+                                           HorizontalAlignment="Right"
+                                           RenderOptions.BitmapScalingMode="Fant"
+                                           Source="../../Images/icons8-add-48.png"
+                                           Opacity="0.5" />
+                                </Grid>
+                            </StackPanel>
                         </Border>
 
                         <ListView ItemsSource="{Binding Contacts}"
@@ -161,7 +175,7 @@
                                 <Image Width="30"
                                        Height="30"
                                        Margin="15,0,0,0"
-                                       VerticalAlignment="Center" 
+                                       VerticalAlignment="Center"
                                        RenderOptions.BitmapScalingMode="Fant"
                                        Source="../../Images/icons8-male-user-64.png" />
                                 <StackPanel VerticalAlignment="Center">
@@ -175,7 +189,7 @@
                                            Margin="0,-5,0,-5" />
                                 </StackPanel>
                             </StackPanel>
-
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Column="1"
@@ -192,8 +206,8 @@
                                     Background="#6B8F17">
                                 <Grid HorizontalAlignment="Stretch">
 
-                                    <Label Content = "{Binding DisplayedContactName}"
-                                           
+                                    <Label Content="{Binding DisplayedContactName}"
+
                                            Foreground="#F2E8CF"
                                            FontWeight="Bold"
                                            Margin="5,0,5,0"
@@ -233,12 +247,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Row="1"
-                                       Height="50"
-                                       Text="Message @Username"
-                                       Style="{StaticResource MessageBox}"
-                                       Grid.ColumnSpan="2"
-                                       Background="White"
-                                       >
+                                     Height="50"
+                                     Text="Message @Username"
+                                     Style="{StaticResource MessageBox}"
+                                     Grid.ColumnSpan="2"
+                                     Background="White">
 
                             </TextBox>
 
