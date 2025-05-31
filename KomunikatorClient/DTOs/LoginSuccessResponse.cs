@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KomunikatorClient.DTOs
 {
-    internal class LoginSuccessResponse
+    public class LoginSuccessResponse
     {
         public string? UserId { get; set; }        
         public string? Username { get; set; }      

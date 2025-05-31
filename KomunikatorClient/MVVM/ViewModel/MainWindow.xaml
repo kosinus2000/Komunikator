@@ -11,6 +11,8 @@
         Title="MyChat"
         Height="500"
         Width="800"
+        Window.MinHeight="300"
+        Window.MinWidth="500"
         Window.Icon="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"

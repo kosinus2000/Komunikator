@@ -6,7 +6,7 @@ namespace KomunikatorClient.Services
     public class CurrentUserSessionService : ObservableObject
     {
         private LoginSuccessResponse? _currentUser;
-        private bool IsUserLoggedIn;
+        private bool  _isUserLoggedIn;
 
         public LoginSuccessResponse? CurrentUser
         {
@@ -15,17 +15,12 @@ namespace KomunikatorClient.Services
             {
                 _currentUser = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsUserLoggedIn));
             }
         }
 
-        public bool IsLoggedIn
-        {
-            get => IsUserLoggedIn;
-            set
-            {
-                IsUserLoggedIn = value;
-                OnPropertyChanged();
-            }
-        }
+        public bool IsUserLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_currentUser.Token);
+
+
     }
 }
