@@ -1,13 +1,13 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using KomunikatorClient.DTOs;
 using KomunikatorClient.Services;
 using KomunikatorShared.DTOs;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using static KomunikatorClient.Services.AuthService;
 
-namespace KomunikatorClient.MVVM.ViewModel;
+namespace KomunikatorClient.MVVM.View;
 
 public enum View
 {
@@ -18,6 +18,11 @@ public enum View
 
 public partial class LoginWindow : Window
 {
+
+    private AuthService _authService;
+    private CurrentUserSessionService _currentUserSessionService;
+
+
     // --- Zarządzanie oknami ---
     private View _view = View.Login;
 
@@ -36,7 +41,7 @@ public partial class LoginWindow : Window
             RegisterStackPanel.Visibility = Visibility.Hidden;
             PasswordResetStackPanel.Visibility = Visibility.Hidden;
             backBtn.Visibility = Visibility.Hidden;
-          //  UserNameRoundedTxtBoxLogin.IsEnabled = 
+            backBtn.IsEnabled = false;
         }
 
         else if (view == View.Register)
@@ -46,6 +51,7 @@ public partial class LoginWindow : Window
             RegisterStackPanel.Visibility = Visibility.Visible;
             PasswordResetStackPanel.Visibility = Visibility.Hidden;
             backBtn.Visibility = Visibility.Visible;
+            backBtn.IsEnabled = true;
         }
         else if (view == View.PasswordReset)
         {
@@ -54,19 +60,28 @@ public partial class LoginWindow : Window
             RegisterStackPanel.Visibility = Visibility.Hidden;
             PasswordResetStackPanel.Visibility = Visibility.Visible;
             backBtn.Visibility = Visibility.Visible;
+            backBtn.IsEnabled = true;
         }
     }
-
-    public LoginWindow()
+    public LoginWindow() : this(App.ServiceProvider.GetRequiredService<AuthService>(), 
+        App.ServiceProvider.GetRequiredService<CurrentUserSessionService>()) 
     {
-        InitializeComponent();
+        this.InitializeComponent(); // Explicitly call the correct method
         SetView(View.Login);
         btnMaximize.IsEnabled = false;
-        
     }
-//--------------------------------------------------------------------------------------------------------------------
 
-    // --- Metody dla logowaina ---
+    public LoginWindow(AuthService authService, CurrentUserSessionService currentUserSessionService)
+    {
+        this.InitializeComponent(); // Explicitly call the correct method
+        SetView(View.Login);
+        btnMaximize.IsEnabled = false;
+        _authService = authService;
+        _currentUserSessionService = currentUserSessionService;
+    }
+    //--------------------------------------------------------------------------------------------------------------------
+
+        // --- Metody dla logowaina ---
     private async void btnLogin_Click(object sender, RoutedEventArgs e)
     {
         // --- Logowanie ---
@@ -86,17 +101,17 @@ public partial class LoginWindow : Window
         Log.Information("LoginWindow: Przygotowano dane do wysłania dla użytkownika {UserName}",
             sendingDataLogin.Username);
 
-        AuthService authService = new AuthService();
+     
         try
         {
-            bool respondSuccesed = await authService.LoginAsync(sendingDataLogin);
+            bool respondSuccesed = await _authService.LoginAsync(sendingDataLogin);
 
             if (respondSuccesed)
             {
                 Log.Information("LoginWindow: Logowanie zakończone sukcesem dla użytkownika {Username}!",
                     sendingDataLogin.Username);
               
-                MainWindow mainWindow = new MainWindow();
+                MainWindow mainWindow = App.ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
                 this.Close();
             }
@@ -136,7 +151,7 @@ public partial class LoginWindow : Window
         Log.Information("LoginWindow: Przygotowano dane do rejestracji dla użytkownika {UserName}",
             registrationData.Username);
 
-        AuthService authService = new AuthService();
+        AuthService authService = _authService;
         if (userPasswordRegistration == userPasswordConfirmation)
         {
             try

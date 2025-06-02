@@ -16,10 +16,13 @@ namespace KomunikatorClient.Services
     {
         private readonly HttpClient _httpClient;
         private const string ServerApiBaseUrl = "https://localhost:7233";
+        private readonly CurrentUserSessionService _currentUserSessionService;
 
-        public AuthService()
+        // Konstruktor AuthService, który inicjalizuje HttpClient
+        public AuthService(CurrentUserSessionService currentUserSessionService)
         {
             _httpClient = new HttpClient();
+            _currentUserSessionService = currentUserSessionService;
         }
 
         public async Task<bool> LoginAsync(LoginRequestModel loginRequestModel)
@@ -61,82 +64,105 @@ namespace KomunikatorClient.Services
                 // metoda PostAsJsonAsync, w którym przekazujemy pełną ścieżke endpointa oraz dane logowania w formie
                 // instancji LoginRequestModel. Await odpowiada za to, że aplikacja czeka na zakończenie operacji, 
                 // jednocześnie nie blokując głównego wątku
+
                 HttpResponseMessage httpResponse =
                     await _httpClient.PostAsJsonAsync(loginEndpointUrl, loginRequestModel);
 
                 if (httpResponse.IsSuccessStatusCode)
                 {
+                    // --- Logowanie zakończone sukcesem po stronie klienta ---
                     Log.Information(
                         "AuthService: Logowanie przebiegło pomyślnie dla użytkownika {Username}. Status: {StatusCode}",
                         loginRequestModel.Username, httpResponse.StatusCode);
-                    return true;
+
+                    // Deserializacja odpowiedzi sukcesu z serwera
+                    // Pamiętaj, że serwer ma zwracać obiekt LoginSuccessResponse
+
+                    LoginSuccessResponse? loginResponse = null;
+                    try
+                    {
+                        loginResponse = await httpResponse.Content.ReadFromJsonAsync<LoginSuccessResponse>();
+                    }
+                    catch (JsonException jsonEx)
+                    {
+                        Log.Error(jsonEx, "AuthService: Błąd deserializacji LoginSuccessResponse. Treść odpowiedzi: {Content}",
+                                  await httpResponse.Content.ReadAsStringAsync());
+
+                        // Jeśli nie uda się zdeserializować odpowiedzi sukcesu,
+                        // traktujemy to jako błąd i nie zapisujemy sesji.
+                        Log.Warning("AuthService: Nie udało się zdeserializować LoginSuccessResponse. Sprawdź, czy serwer zwraca poprawny format JSON.");
+                        return false;
+                    }
+
+                    if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
+                    {
+                        
+                        _currentUserSessionService.SetUserSession(loginResponse);
+                        Log.Information("AuthService: Dane sesji użytkownika dla {Username} zapisane.", loginResponse.Username);
+                        return true; 
+                    }
+                    else
+                    {
+                        Log.Warning("AuthService: Logowanie pomyślne (status {StatusCode}), ale token lub dane użytkownika są puste.",
+                                    httpResponse.StatusCode);
+                        return false; // Traktujemy jako błąd, jeśli nie ma tokena
+                    }
                 }
-                else
+                else // Status odpowiedzi nie jest sukcesem (np. 400, 401, 403, 500)
                 {
-                    // W tym przypadku następuje utworzenie stringa z błędem. Dzięki await aplikacja czeka na wysłanie 
-                    // błegu. HttpResponse.Content pobiera treść odpowiedzi HTTP nataomiast .ReadAsStringAsync()
-                    // przekształca zawartość odpowiedzi na tekst asynchronicznie.
-                    // Muszę pamiętać, że odpowiedź z serwera orginalnie ma format JSONa np.
-                    // { "message": "Niepoprawne dane logowania", "errorCode": 401 }
                     string errorContent = await httpResponse.Content.ReadAsStringAsync();
 
                     Log.Warning(
-                        "AuthService: Logowanie nie powiodło się dla użytkownika {Username}. Status: {StatusCode}, Treść błędu: {ErrorContent}",
+                        "AuthService: Logowanie nie powiodło się dla użytkownika: {Username}, Status: {StatusCode}, Treść błędu: {ErrorContent}",
                         loginRequestModel.Username, httpResponse.StatusCode,
-                        // jezeli string jest pusty to zwraca [Brak], jeżeli nie, wypisuje errorContent
                         string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
 
-                    //deserializacja błędu
-                    ErrorResponse? structuredError = null;
+                    // Próba deserializacji błędu, jeśli serwer zwraca błędy w formacie List<IdentityErrorResponse>
+                    List<IdentityErrorResponse>? errors = null;
                     if (!string.IsNullOrEmpty(errorContent))
                         try
                         {
-                            structuredError = JsonSerializer.Deserialize<ErrorResponse>(errorContent);
+                            // Upewnij się, że masz using System.Collections.Generic; i using System.Linq;
+                            errors = JsonSerializer.Deserialize<List<IdentityErrorResponse>>(errorContent);
                         }
-                        catch (JsonException eJson)
+                        catch (JsonException jj)
                         {
-                            Log.Error(eJson,
-                                "AuthService: Nie udało sie zdeserializować treści błędu jako ErrorResponse. Treść {ErrorContent}",
+                            Log.Error(jj,
+                                "AuthService: Nie udało się zdeserializować treści błędu jako List<IdentityErrorResponse>. Treść {ErrorContent}",
                                 errorContent);
                         }
 
-                    if (structuredError != null && !string.IsNullOrEmpty(structuredError.Message))
+                    if (errors != null && errors.Any())
                     {
-                        Log.Warning("AuthService: ");
+                        string errorMessages = string.Join("\n- ", errors.Select(e => e.Description));
+                        Log.Warning("AuthService: Szczegółowe błędy logowania z serwera:\n- {Errors}", errorMessages);
+                        // Tutaj możesz zdecydować, czy chcesz zwrócić te szczegółowe błędy do UI
+                        // Obecnie metoda zwraca bool, więc po prostu logujemy.
                     }
 
-                    return false;
+                    return false; // Logowanie nieudane
                 }
-                // if (httpResponse != null)
-                // {
-                //     Log.Information("AuthService: Otrzymano odpowiedź od serwera (PostAsJsonAsync) ze statusem: {StatusCode}", httpResponse.StatusCode);
-                //     return httpResponse.IsSuccessStatusCode;
-                // }
-
-                return false;
             }
-            catch (HttpRequestException e)
+            catch (HttpRequestException e) // Problemy z połączeniem, serwer nieosiągalny itp.
             {
-                Log.Error(
-                    "AuthService: Błąd żądania http podczas logowania logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
+                Log.Error(e,
+                    "AuthService: Błąd żądania HTTP podczas logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
                     loginRequestModel.Username, loginEndpointUrl);
                 return false;
             }
-            catch (JsonException e)
+            catch (JsonException e) // Błędy serializacji/deserializacji JSON
             {
-                Log.Error("AuthService: Błąd wysłanego json podczas przygotowania żądania dla {Username}",
+                Log.Error(e, "AuthService: Błąd JSON podczas logowania dla {Username}. Problem z serializacją żądania lub deserializacją odpowiedzi.",
                     loginRequestModel.Username);
                 return false;
             }
-            catch (Exception e)
+            catch (Exception e) // Inne, nieoczekiwane wyjątki
             {
-                Log.Error("AuthService: Nieoczekiwany bład podczas logowania użytkownika {Username}",
+                Log.Error(e, "AuthService: Nieoczekiwany błąd podczas logowania użytkownika {Username}",
                     loginRequestModel.Username);
-
                 return false;
             }
         }
-
         public class RegistrationResultModel
         {
             public bool Succeeded { get; set; }

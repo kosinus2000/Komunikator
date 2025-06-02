@@ -2,22 +2,38 @@
 using System.Windows.Input;
 using KomunikatorClient.MVVM.ViewModel;
 
-namespace KomunikatorClient.MVVM.ViewModel
+namespace KomunikatorClient.MVVM.View
 {
     
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly MainViewModel _mainViewModel;
+
+        public MainWindow(MainViewModel mainViewModel)
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel();
+            _mainViewModel = _mainViewModel;
+            this.DataContext = _mainViewModel;
         }
 
         private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            throw new NotImplementedException();
-        }
+           
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                
+                if (this.WindowState == WindowState.Maximized)
+                {
+                    // Opcjonalnie: Jeśli okno jest zmaksymalizowane, przy kliknięciu paska tytułowego
+                    // i przeciągnięciu, możesz przywrócić je do normalnego rozmiaru i zacząć przeciągać.
+                    // Wymaga to bardziej złożonej logiki, aby obliczyć nową pozycję.
+                    // Na razie, można po prostu wyjść z metody lub przywrócić do normalnego stanu.
+                    // this.WindowState = WindowState.Normal;
+                }
 
+                this.DragMove();
+            }
+        }
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;

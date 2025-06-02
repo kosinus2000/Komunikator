@@ -1,14 +1,16 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using KomunikatorClient.Core;
 using KomunikatorClient.MVVM.Model;
+using KomunikatorClient.Services;
+using System.ComponentModel; // Dodaj ten using!
 
 namespace KomunikatorClient.MVVM.ViewModel;
 
-public partial class MainViewModel : ObservableObject
+public class MainViewModel : ObservableObject
 {
     public ObservableCollection<MessageModel> Messages { get; set; }
     public ObservableCollection<ContactModel> Contacts { get; set; }
-
+    public CurrentUserSessionService CurrentUserSessionService { get; }
     public RelayCommand SendCommand { get; set; }
 
     private ContactModel _selectedContact;
@@ -23,15 +25,12 @@ public partial class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(DisplayedContactName));
         }
     }
-    
+
     public string DisplayedContactName
     {
-        get
-        {
-            return _selectedContact?.Username ?? "@UserName"; 
-        }
+        get { return CurrentUserSessionService.CurrentUser?.Username ?? "@UserName"; }
     }
-    
+
 
     private string _message;
 
@@ -40,17 +39,20 @@ public partial class MainViewModel : ObservableObject
         get { return _message; }
         set
         {
-            {
-                _message = value;
-            }
+            _message = value;
             OnPropertyChanged();
         }
     }
 
-    public MainViewModel()
+    public MainViewModel(CurrentUserSessionService currentUserSessionService)
     {
         Messages = new ObservableCollection<MessageModel>();
         Contacts = new ObservableCollection<ContactModel>();
+        CurrentUserSessionService = currentUserSessionService;
+
+       
+        CurrentUserSessionService.PropertyChanged += CurrentUserSessionService_PropertyChanged;
+        
 
         SendCommand = new RelayCommand(o =>
         {
@@ -60,8 +62,6 @@ public partial class MainViewModel : ObservableObject
             {
                 Message = Message,
                 FirstMessage = false,
-
-
             });
             Message = string.Empty;
         });
@@ -84,7 +84,19 @@ public partial class MainViewModel : ObservableObject
                 Username = $"Andrzej {i}",
                 Messages = Messages
             });
+        }
 
+        OnPropertyChanged(nameof(DisplayedContactName));
+    }
+
+
+    private void CurrentUserSessionService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CurrentUserSessionService.CurrentUser) ||
+            e.PropertyName == nameof(CurrentUserSessionService.IsUserLoggedIn))
+        {
+            OnPropertyChanged(nameof(DisplayedContactName)); 
         }
     }
+    
 }

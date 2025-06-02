@@ -4,7 +4,9 @@ using Serilog.Events;
 using Microsoft.Extensions.DependencyInjection; 
 using System; 
 using KomunikatorClient.Services;
-using KomunikatorClient.DTOs; 
+using KomunikatorClient.DTOs;
+using KomunikatorClient.MVVM.View;
+using KomunikatorClient.MVVM.ViewModel;
 
 namespace KomunikatorClient
 {
@@ -25,6 +27,8 @@ namespace KomunikatorClient
             // Singleton oznacza, że będzie tylko jedna instancja tej klasy w całej aplikacji.
             serviceCollection.AddSingleton<AuthService>();
             serviceCollection.AddSingleton<CurrentUserSessionService>();
+            serviceCollection.AddSingleton<MainWindow>();
+            serviceCollection.AddSingleton<MainViewModel>();
             // Możesz tu dodać inne serwisy, które chcesz rozwiązywać przez DI
 
 
