@@ -12,7 +12,7 @@ namespace KomunikatorClient.MVVM.View
         public MainWindow(MainViewModel mainViewModel)
         {
             InitializeComponent();
-            _mainViewModel = _mainViewModel;
+            _mainViewModel = mainViewModel;
             this.DataContext = _mainViewModel;
         }
 
