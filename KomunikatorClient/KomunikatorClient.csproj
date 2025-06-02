@@ -65,4 +65,8 @@
     <Folder Include="MVVM\View\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\KomunikatorShared\KomunikatorShared.csproj" />
+  </ItemGroup>
+
 </Project>

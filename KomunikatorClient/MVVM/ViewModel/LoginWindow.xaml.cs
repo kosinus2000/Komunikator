@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using KomunikatorClient.DTOs;
 using KomunikatorClient.Services;
+using KomunikatorShared.DTOs;
 using Serilog;
 using static KomunikatorClient.Services.AuthService;
 

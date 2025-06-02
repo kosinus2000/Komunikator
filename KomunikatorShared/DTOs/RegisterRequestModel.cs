@@ -1,4 +1,4 @@
-﻿namespace KomunikatorClient.DTOs;
+﻿namespace KomunikatorShared.DTOs;
 
 public class RegisterRequestModel
 {

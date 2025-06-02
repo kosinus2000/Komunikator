@@ -1,11 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
 using System.Security.Claims;
+using KomunikatorServer.DTOs;
+using KomunikatorShared.DTOs;
 using Microsoft.IdentityModel.Tokens;
 
 
@@ -15,13 +15,13 @@ namespace KomunicatorServer.Controllers;
 [ApiController]
 public class AuthController : Controller
 {
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly SignInManager<AppUser> _signInManager;
     private readonly ILogger<AuthController> _logger;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _configuration;
 
-    public AuthController(SignInManager<IdentityUser> signInManager, ILogger<AuthController> logger,
-        UserManager<IdentityUser> userManager, IConfiguration configuration)
+    public AuthController(SignInManager<AppUser> signInManager, ILogger<AuthController> logger,
+        UserManager<AppUser> userManager, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _logger = logger;
@@ -114,7 +114,7 @@ public class AuthController : Controller
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegistationRequestModel model)
+    public async Task<IActionResult> Register([FromBody] RegisterRequestModel model)
     {
         _logger.LogInformation("Otrzymano żądanie POST na /api/auth/register dla użytkownika {Username}",
             model?.Username ?? "[brak nazwy]");
@@ -126,7 +126,7 @@ public class AuthController : Controller
 
         try
         {
-            IdentityUser user = new IdentityUser
+            AppUser user = new AppUser
             {
                 UserName = model.Username,
                 Email = model.Email
@@ -156,7 +156,7 @@ public class AuthController : Controller
         }
     }
 
-    private string GenerateJwtToken(KomunikatorServer.DTOs.IdentityUser user)
+    private string GenerateJwtToken(AppUser user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);

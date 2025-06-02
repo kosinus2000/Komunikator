@@ -1,5 +1,6 @@
 ﻿using KomunikatorClient.Core;
 using KomunikatorClient.DTOs;
+using KomunikatorShared.DTOs;
 
 namespace KomunikatorClient.Services
 {
@@ -24,3 +25,4 @@ namespace KomunikatorClient.Services
 
     }
 }
+         

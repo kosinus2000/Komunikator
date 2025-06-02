@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Serilog;
 using System.Net.Http.Json;
 using KomunikatorClient.DTOs;
+using KomunikatorShared.DTOs;
 
 namespace KomunikatorClient.Services
 {

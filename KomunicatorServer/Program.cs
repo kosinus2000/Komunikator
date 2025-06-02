@@ -1,10 +1,10 @@
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using KomunikatorServer.Data;
+using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using IdentityUser = KomunikatorServer.DTOs.IdentityUser;
 
 namespace KomunicatorServer
 {
@@ -25,7 +25,7 @@ namespace KomunicatorServer
             builder.Services.AddControllers();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(conectionString));
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
+            builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
                     options.Password.RequireDigit = true;               
                     options.Password.RequiredLength = 8;                
                     options.Password.RequireNonAlphanumeric = false;   
