@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using Serilog;
 using System.Net.Http.Json;
 using KomunikatorClient.DTOs;
 using KomunikatorShared.DTOs;
+using System.Net.Http.Headers;
 
 namespace KomunikatorClient.Services
 {
@@ -21,9 +23,34 @@ namespace KomunikatorClient.Services
         // Konstruktor AuthService, który inicjalizuje HttpClient
         public AuthService(CurrentUserSessionService currentUserSessionService)
         {
-            _httpClient = new HttpClient();
+            var handler = new HttpClientHandler();
+
+            _httpClient = new HttpClient(handler);
+
             _currentUserSessionService = currentUserSessionService;
         }
+        public void SetAuthorizationHeader(string? token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Ustawia domyślny nagłówek Authorization dla wszystkich kolejnych żądań
+                // wysyłanych przez tę instancję _httpClient.
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                Log.Debug("AuthService: Ustawiono nagłówek autoryzacji z tokenem.");
+            }
+            else
+            {
+                ClearAuthorizationHeader();
+            }
+        }
+
+        public void ClearAuthorizationHeader()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            Log.Debug("AuthService: Usunięto nagłówek autoryzacji.");
+        }
+
+
 
         public async Task<bool> LoginAsync(LoginRequestModel loginRequestModel)
         {
@@ -96,10 +123,10 @@ namespace KomunikatorClient.Services
 
                     if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
                     {
-                        
+
                         _currentUserSessionService.SetUserSession(loginResponse);
                         Log.Information("AuthService: Dane sesji użytkownika dla {Username} zapisane.", loginResponse.Username);
-                        return true; 
+                        return true;
                     }
                     else
                     {
