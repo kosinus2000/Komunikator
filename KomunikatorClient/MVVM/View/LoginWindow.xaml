@@ -1,13 +1,14 @@
-﻿<Window x:Class="KomunikatorClient.MVVM.ViewModel.LoginWindow"
+﻿<Window x:Class="KomunikatorClient.MVVM.View.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Komunikator"
+        xmlns:komunikator="clr-namespace:Komunikator"
         mc:Ignorable="d"
         SizeToContent="Manual"
         ShowInTaskbar="True"
-        Window.Icon="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
+        Window.Icon ="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
         Title="Logowanie"
         Height="350"
         Width="300"
@@ -173,7 +174,7 @@
                 </StackPanel>
 
                 <StackPanel>
-                    <local:RoundedButton Width="100"
+                    <komunikator:RoundedButton Width="100"
                                          Height="30"
                                          ButtonContent="Login"
                                          CornerRadius="0,5,0,5"
@@ -277,7 +278,7 @@
                                      Style="{StaticResource ThemedPasswordBoxStyle}" />
                     </StackPanel>
 
-                    <local:RoundedButton Width="100"
+                    <komunikator:RoundedButton Width="100"
                                          Height="30"
                                          ButtonContent="Rejestracja"
                                          CornerRadius="0,5,0,5"
@@ -321,7 +322,7 @@
                              x:Name="UserEmailRoundedTxtBoxPasswordReset"
                              Style="{StaticResource ThemedTextBoxStyle}"
                              Text="{Binding UserName, Mode=TwoWay}" />
-                    <local:RoundedButton Width="100"
+                    <komunikator:RoundedButton Width="100"
                                          Height="30"
                                          ButtonContent="Wyślij"
                                          CornerRadius="0,5,0,5"

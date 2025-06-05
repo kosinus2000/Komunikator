@@ -1,56 +1,70 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
-using Serilog;         
+﻿using System.Windows;
+using Serilog;
 using Serilog.Events;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using KomunikatorClient.Services;
+using KomunikatorClient.MVVM.View;
+using KomunikatorClient.MVVM.ViewModel;
 
 namespace KomunikatorClient
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// Logika interakcji dla App.xaml.
+    /// Klasa główna aplikacji, odpowiedzialna za konfigurację usług, logowania oraz zarządzanie cyklem życia aplikacji.
+    /// Dziedziczy po <see cref="Application"/>.
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Statyczna właściwość udostępniająca dostawcę usług (Service Provider)
+        /// umożliwiającego rozwiązywanie zależności (Dependency Injection) w całej aplikacji.
+        /// </summary>
+        public static IServiceProvider ServiceProvider { get; private set; }
+
+        /// <summary>
+        /// Metoda wywoływana przy starcie aplikacji.
+        /// Odpowiada za konfigurację wstrzykiwania zależności (DI) oraz systemu logowania Serilog.
+        /// </summary>
+        /// <param name="e">Argumenty zdarzenia startowego.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e); // Wywołanie metody bazowej
+            var serviceCollection = new ServiceCollection();
 
-            // --- Początek konfiguracji Serilog ---
+            serviceCollection.AddTransient<LoginWindow>();
+            serviceCollection.AddSingleton<AuthService>();
+            serviceCollection.AddSingleton<CurrentUserSessionService>();
+            serviceCollection.AddSingleton<MainWindow>();
+            serviceCollection.AddSingleton<KomunikatorClient.MVVM.ViewModel.MainViewModel>();
+
+            ServiceProvider = serviceCollection.BuildServiceProvider();
+
+            base.OnStartup(e);
+
             Log.Logger = new LoggerConfiguration()
-                // 1. Ustawiamy globalny minimalny poziom logowania.
-                .MinimumLevel.Debug()  // Będą przetwarzane logi od Debug wzwyż.
-
-                // 2. Kierujemy logi do okna "Debug Output" w Visual Studio.
-                //    Wszystkie logi od poziomu Debug wzwyż tutaj trafią.
+                .MinimumLevel.Debug()
                 .WriteTo.Debug()
-
-                // 3. Kierujemy logi do pliku.
                 .WriteTo.File(
-                    path: "logs/KomunikatorClientLog-.txt", // Ścieżka do pliku (w podfolderze "logs")
-                                                           // Serilog doda datę do nazwy pliku, np. KomunikatorClientLog-20250511.txt
-                    rollingInterval: RollingInterval.Day,  // Nowy plik będzie tworzony każdego dnia.
-                    restrictedToMinimumLevel: LogEventLevel.Information, // DO PLIKU trafią tylko logi od poziomu Information wzwyż.
-                                                                         // Logi Debug nie trafią do pliku, ale będą w oknie Debug Output.
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}" // Format zapisu logu.
+                    path: "logs/KomunikatorClientLog-.txt",
+                    rollingInterval: RollingInterval.Day,
+                    restrictedToMinimumLevel: LogEventLevel.Information,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
                 )
-                .CreateLogger(); // Tworzymy i przypisujemy skonfigurowany logger do globalnego Log.Logger.
-            // --- Koniec konfiguracji Serilog ---
+                .CreateLogger();
 
-            // Testowe logi, aby sprawdzić, czy konfiguracja działa:
-            Log.Information("Aplikacja KomunikatorClient została uruchomiona. Serilog jest skonfigurowany.");
-        //    Log.Debug("To jest testowy log typu Debug - powinien być widoczny w Debug Output, ale nie w pliku.");
-        //    Log.Warning("To jest testowy log typu Warning - powinien być wszędzie.");
+            Log.Information("Aplikacja KomunikatorClient została uruchomiona. Serwisy zarejestrowane, Serilog skonfigurowany.");
         }
 
+        /// <summary>
+        /// Metoda wywoływana przy zamykaniu aplikacji.
+        /// Odpowiada za prawidłowe zamknięcie i opróżnienie buforów loggera Serilog.
+        /// </summary>
+        /// <param name="e">Argumenty zdarzenia zamknięcia.</param>
         protected override void OnExit(ExitEventArgs e)
         {
-            // Ten log również powinien trafić do pliku (bo jest Information) i do Debug Output
             Log.Information("Aplikacja KomunikatorClient jest zamykana. Zapisywanie pozostałych logów.");
-
-            Log.CloseAndFlush(); // Bardzo ważne! Zapewnia, że wszystkie buforowane logi zostaną zapisane przed zamknięciem aplikacji.
-
-            base.OnExit(e); // Wywołanie metody bazowej
+            Log.CloseAndFlush();
+            base.OnExit(e);
         }
     }
-    
 }
