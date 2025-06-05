@@ -68,6 +68,9 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    public RelayCommand LogoutCommand { get; set; }
+    public event EventHandler LogoutRequested;
+
     /// <summary>
     /// Konstruktor inicjalizujący dane, wiążący komendy oraz subskrybujący zmiany sesji użytkownika.
     /// </summary>
@@ -76,6 +79,13 @@ public class MainViewModel : ObservableObject
         Messages = new ObservableCollection<MessageModel>();
         Contacts = new ObservableCollection<ContactModel>();
         CurrentUserSessionService = currentUserSessionService;
+
+        LogoutCommand = new RelayCommand(o =>
+       {
+           currentUserSessionService.ClearUserSession();
+           LogoutRequested?.Invoke(this, EventArgs.Empty);
+       }
+        );
 
         // Obsługa zmian sesji użytkownika
         CurrentUserSessionService.PropertyChanged += CurrentUserSessionService_PropertyChanged;
@@ -131,4 +141,5 @@ public class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(DisplayedContactName));
         }
     }
+
 }

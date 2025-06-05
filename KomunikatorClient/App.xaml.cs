@@ -31,10 +31,11 @@ namespace KomunikatorClient
         {
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.AddTransient<LoginWindow>();
             serviceCollection.AddSingleton<AuthService>();
             serviceCollection.AddSingleton<CurrentUserSessionService>();
             serviceCollection.AddSingleton<MainWindow>();
-            serviceCollection.AddSingleton<MainViewModel>();
+            serviceCollection.AddSingleton<KomunikatorClient.MVVM.ViewModel.MainViewModel>();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 

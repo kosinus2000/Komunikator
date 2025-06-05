@@ -54,5 +54,6 @@ namespace KomunikatorClient.Core
         {
             this.execute(parameter);
         }
+
     }
 }

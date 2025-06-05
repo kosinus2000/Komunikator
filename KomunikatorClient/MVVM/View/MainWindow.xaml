@@ -195,14 +195,27 @@
 
 
                             <Image Grid.Column="1"
-                                   Width="20"
-                                   Height="20"
-                                   RenderOptions.BitmapScalingMode="Fant"
-                                   Source="../../Images/icons8-more-48.png"
-                                   Margin="10,0,10,0"
-                                   Opacity="0.7"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Right" />
+       Width="20"
+       Height="20"
+       RenderOptions.BitmapScalingMode="Fant"
+       Source="../../Images/icons8-more-48.png"
+       Margin="10,0,10,0"
+       Opacity="0.7"
+       VerticalAlignment="Center"
+       HorizontalAlignment="Right" 
+       Name="btnUserMoreOptions" 
+       MouseDown="btnUserMoreOptions_MouseDown">
+                                <Image.ContextMenu>
+                                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="Dodaj zdjęcie" />
+                                        <MenuItem Header="Ustawienia" />
+                                        <Separator />
+                                        <MenuItem Header="Wyloguj" Command="{Binding LogoutCommand}"/>
+                                    </ContextMenu>
+                                </Image.ContextMenu>
+                            </Image>
+
+
                         </Grid>
 
                     </Grid>
