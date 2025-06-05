@@ -7,17 +7,17 @@ using KomunikatorClient.Services;
 namespace KomunikatorClient.MVVM.ViewModel;
 
 /// <summary>
-/// Główny ViewModel aplikacji – odpowiada za logikę okna głównego.
+/// Główny ViewModel aplikacji, zarządzający logiką okna głównego.
 /// </summary>
 public class MainViewModel : ObservableObject
 {
     /// <summary>
-    /// Lista wiadomości wyświetlana w aktualnym czacie.
+    /// Kolekcja wiadomości wyświetlanych w aktywnym czacie.
     /// </summary>
     public ObservableCollection<MessageModel> Messages { get; set; }
 
     /// <summary>
-    /// Lista kontaktów użytkownika.
+    /// Kolekcja kontaktów użytkownika.
     /// </summary>
     public ObservableCollection<ContactModel> Contacts { get; set; }
 
@@ -34,7 +34,7 @@ public class MainViewModel : ObservableObject
     private ContactModel _selectedContact;
 
     /// <summary>
-    /// Aktualnie wybrany kontakt – jego wiadomości są wyświetlane.
+    /// Aktualnie wybrany kontakt; jego wiadomości są wyświetlane.
     /// </summary>
     public ContactModel SelectedContact
     {
@@ -68,12 +68,21 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Komenda do wylogowania użytkownika.
+    /// </summary>
     public RelayCommand LogoutCommand { get; set; }
+
+    /// <summary>
+    /// Zdarzenie wywoływane po żądaniu wylogowania.
+    /// </summary>
     public event EventHandler LogoutRequested;
 
     /// <summary>
-    /// Konstruktor inicjalizujący dane, wiążący komendy oraz subskrybujący zmiany sesji użytkownika.
+    /// Inicjalizuje nowy egzemplarz klasy <see cref="MainViewModel"/>.
+    /// Ustawia domyślne dane, wiąże komendy i subskrybuje zmiany sesji użytkownika.
     /// </summary>
+    /// <param name="currentUserSessionService">Serwis zarządzający bieżącą sesją użytkownika.</param>
     public MainViewModel(CurrentUserSessionService currentUserSessionService)
     {
         Messages = new ObservableCollection<MessageModel>();
@@ -81,16 +90,13 @@ public class MainViewModel : ObservableObject
         CurrentUserSessionService = currentUserSessionService;
 
         LogoutCommand = new RelayCommand(o =>
-       {
-           currentUserSessionService.ClearUserSession();
-           LogoutRequested?.Invoke(this, EventArgs.Empty);
-       }
-        );
+        {
+            currentUserSessionService.ClearUserSession();
+            LogoutRequested?.Invoke(this, EventArgs.Empty);
+        });
 
-        // Obsługa zmian sesji użytkownika
         CurrentUserSessionService.PropertyChanged += CurrentUserSessionService_PropertyChanged;
 
-        // Definicja komendy wysyłania wiadomości
         SendCommand = new RelayCommand(o =>
         {
             if (string.IsNullOrWhiteSpace(Message))
@@ -105,7 +111,7 @@ public class MainViewModel : ObservableObject
             Message = string.Empty;
         });
 
-        // Wiadomość powitalna (tymczasowe dane testowe)
+        // Tymczasowe dane testowe
         Messages.Add(new MessageModel
         {
             Time = DateTime.Now,
@@ -117,7 +123,6 @@ public class MainViewModel : ObservableObject
             FirstMessage = true
         });
 
-        // Przykładowi użytkownicy
         for (int i = 0; i < 5; i++)
         {
             Contacts.Add(new ContactModel
@@ -131,8 +136,10 @@ public class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Reaguje na zmiany użytkownika w sesji (np. po zalogowaniu).
+    /// Reaguje na zmiany właściwości w serwisie sesji użytkownika, np. po zalogowaniu lub wylogowaniu.
     /// </summary>
+    /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
+    /// <param name="e">Argumenty zdarzenia, zawierające nazwę zmienionej właściwości.</param>
     private void CurrentUserSessionService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(CurrentUserSessionService.CurrentUser) ||
@@ -141,5 +148,4 @@ public class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(DisplayedContactName));
         }
     }
-
 }
