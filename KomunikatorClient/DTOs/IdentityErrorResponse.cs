@@ -1,12 +1,22 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace KomunikatorClient.DTOs;
-
-public class IdentityErrorResponse
+namespace KomunikatorClient.DTOs
 {
-    [JsonPropertyName("code")]
-    public string? Code { get; set; }
+    /// <summary>
+    /// Reprezentuje pojedynczy błąd zwrócony przez system tożsamości (Identity).
+    /// </summary>
+    public class IdentityErrorResponse
+    {
+        /// <summary>
+        /// Kod błędu, np. "DuplicateUserName", "InvalidEmail" itp.
+        /// </summary>
+        [JsonPropertyName("code")]
+        public string? Code { get; set; }
 
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
+        /// <summary>
+        /// Opis błędu — zazwyczaj czytelny komunikat dla użytkownika.
+        /// </summary>
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+    }
 }

@@ -1,35 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Serilog;
-using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using KomunikatorClient.DTOs;
 using KomunikatorShared.DTOs;
-using System.Net.Http.Headers;
-using System.Windows.Controls;
 
 namespace KomunikatorClient.Services
 {
+    /// <summary>
+    /// Klasa serwisowa odpowiedzialna za operacje związane z uwierzytelnianiem użytkowników,
+    /// takie jak logowanie i rejestracja.
+    /// </summary>
     public class AuthService
     {
         private readonly HttpClient _httpClient;
         private const string ServerApiBaseUrl = "https://localhost:7233";
         private readonly CurrentUserSessionService _currentUserSessionService;
 
-        // Konstruktor AuthService, który inicjalizuje HttpClient
+        /// <summary>
+        /// Konstruktor klasy AuthService.
+        /// Inicjalizuje instancję HttpClient oraz wstrzykuje usługę zarządzającą sesją użytkownika.
+        /// </summary>
+        /// <param name="currentUserSessionService">Serwis zarządzający bieżącą sesją użytkownika.</param>
         public AuthService(CurrentUserSessionService currentUserSessionService)
         {
-            HttpClientHandler handler = new HttpClientHandler();
-
-            _httpClient = new HttpClient(handler);
-
+            // Inicjalizacja HttpClient z domyślnym handlerem.
+            _httpClient = new HttpClient(new HttpClientHandler());
             _currentUserSessionService = currentUserSessionService;
         }
+
+        /// <summary>
+        /// Ustawia nagłówek autoryzacji "Bearer" z podanym tokenem dla wszystkich przyszłych żądań HttpClient.
+        /// Jeśli token jest pusty lub null, nagłówek autoryzacji jest usuwany.
+        /// </summary>
+        /// <param name="token">Token autoryzacyjny (JWT) do ustawienia.</param>
         public void SetAuthorizationHeader(string? token)
         {
             if (!string.IsNullOrEmpty(token))
@@ -43,14 +52,23 @@ namespace KomunikatorClient.Services
             }
         }
 
+        /// <summary>
+        /// Usuwa nagłówek autoryzacji z HttpClient, efektywnie wylogowując użytkownika lub resetując stan autoryzacji.
+        /// </summary>
         public void ClearAuthorizationHeader()
         {
             _httpClient.DefaultRequestHeaders.Authorization = null;
             Log.Debug("AuthService: Usunięto nagłówek autoryzacji.");
         }
 
-
-
+        /// <summary>
+        /// Wysyła żądanie logowania do serwera.
+        /// Próbuje zalogować użytkownika za pomocą dostarczonych danych logowania.
+        /// </summary>
+        /// <param name="loginRequestModel">Model danych żądania logowania zawierający nazwę użytkownika i hasło.</param>
+        /// <returns>
+        /// <c>true</c> jeśli logowanie powiodło się i otrzymano poprawny token; w przeciwnym razie <c>false</c>.
+        /// </returns>
         public async Task<bool> LoginAsync(LoginRequestModel loginRequestModel)
         {
             string path = "/api/auth/login";
@@ -59,38 +77,13 @@ namespace KomunikatorClient.Services
 
             try
             {
-                // serializacja Jsona -> zbudowanie Jsona z dostępnych dannych
-                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(loginRequestModel);
-
-
-                /*Log.Debug("AuthService: Wysyłamy Json payload {Payload}", jsonPayload);
-
-                // utworzenie ciała zapytania z Jasonem, kodowaniem  oraz ścieżką endpointa
-                HttpContent httpContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-                // wysyłaanie danych na wskazany endpoint
-                Log.Information("AuthService: Wysyłanie żądania POST na adres: {Url}", loginEndpointUrl);
-                HttpResponseMessage httpResponse = await _httpClient.PostAsync(loginEndpointUrl, httpContent);
-
-                if (httpResponse != null)
-                {
-                    Log.Information("AuthService: Otrzymano odpowiedź od serwera ze statusem: {StatusCode}",
-                        httpResponse.StatusCode);
-                    return httpResponse.IsSuccessStatusCode;
-                }
-                Wykonane dla celów edukacyjnych :)
-                */
-
-                // ---Automatyczne serializacja JSONa za pomoca PostAsJsonAsync---
+                // Automatyczna serializacja obiektu loginRequestModel do JSON i wysłanie jako treść żądania POST.
                 Log.Information(
                     "AuthService: Wysyłanie żądania POST (używając PostAsJsonAsync) na adres: {Url} dla użytkownika {Username}",
                     loginEndpointUrl, loginRequestModel.Username);
 
-                // Utwożenie responda. Do responda przypisywana jest od razu odpowiedź. Za wysyłanie odpowiada
-                // metoda PostAsJsonAsync, w którym przekazujemy pełną ścieżke endpointa oraz dane logowania w formie
-                // instancji LoginRequestModel. Await odpowiada za to, że aplikacja czeka na zakończenie operacji, 
-                // jednocześnie nie blokując głównego wątku
-
+                // Wysyłanie danych na wskazany endpoint. Await sprawia, że aplikacja czeka na zakończenie operacji,
+                // jednocześnie nie blokując głównego wątku.
                 HttpResponseMessage httpResponse =
                     await _httpClient.PostAsJsonAsync(loginEndpointUrl, loginRequestModel);
 
@@ -100,28 +93,29 @@ namespace KomunikatorClient.Services
                         "AuthService: Logowanie przebiegło pomyślnie dla użytkownika {Username}. Status: {StatusCode}",
                         loginRequestModel.Username, httpResponse.StatusCode);
 
-
                     LoginSuccessResponse? loginResponse = null;
                     try
                     {
+                        // Deserializacja odpowiedzi JSON do obiektu LoginSuccessResponse.
                         loginResponse = await httpResponse.Content.ReadFromJsonAsync<LoginSuccessResponse>();
                     }
                     catch (JsonException jsonEx)
                     {
                         Log.Error(jsonEx, "AuthService: Błąd deserializacji LoginSuccessResponse. Treść odpowiedzi: {Content}",
-                                  await httpResponse.Content.ReadAsStringAsync());
+                                      await httpResponse.Content.ReadAsStringAsync());
 
                         Log.Warning("AuthService: Nie udało się zdeserializować LoginSuccessResponse. Sprawdź, czy serwer zwraca poprawny format JSON.");
                         return false;
                     }
 
+                    // Sprawdzenie, czy odpowiedź zawiera token i dane użytkownika.
                     if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
                     {
-
+                        // Zapisanie danych sesji użytkownika.
                         _currentUserSessionService.SetUserSession(loginResponse);
                         Log.Information("AuthService: Użytkownik {Username} zalogowany pomyślnie. Token: {Token}",
                                         loginResponse.Username, loginResponse.Token);
-                        // ---Ustawienie nagłówka autoryzacji z tokenem---
+                        // Ustawienie nagłówka autoryzacji z otrzymanym tokenem.
                         SetAuthorizationHeader(loginResponse.Token);
                         Log.Information("AuthService: Dane sesji użytkownika dla {Username} zapisane.", loginResponse.Username);
                         return true;
@@ -129,7 +123,7 @@ namespace KomunikatorClient.Services
                     else
                     {
                         Log.Warning("AuthService: Logowanie pomyślne (status {StatusCode}), ale token lub dane użytkownika są puste.",
-                                    httpResponse.StatusCode);
+                                        httpResponse.StatusCode);
                         return false;
                     }
                 }
@@ -142,11 +136,11 @@ namespace KomunikatorClient.Services
                         loginRequestModel.Username, httpResponse.StatusCode,
                         string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
 
-
                     List<IdentityErrorResponse>? errors = null;
                     if (!string.IsNullOrEmpty(errorContent))
                         try
                         {
+                            // Próba deserializacji treści błędu jako lista błędów tożsamości.
                             errors = JsonSerializer.Deserialize<List<IdentityErrorResponse>>(errorContent);
                         }
                         catch (JsonException jj)
@@ -185,12 +179,31 @@ namespace KomunikatorClient.Services
                 return false;
             }
         }
+
+        /// <summary>
+        /// Reprezentuje wynik operacji rejestracji, wskazując, czy zakończyła się sukcesem
+        /// oraz dostarczając listę błędów w przypadku niepowodzenia.
+        /// </summary>
         public class RegistrationResultModel
         {
+            /// <summary>
+            /// Wskazuje, czy rejestracja powiodła się.
+            /// </summary>
             public bool Succeeded { get; set; }
+            /// <summary>
+            /// Lista błędów tożsamości zwróconych przez serwer w przypadku niepowodzenia rejestracji.
+            /// </summary>
             public List<IdentityErrorResponse>? Errors { get; set; }
         }
 
+        /// <summary>
+        /// Wysyła żądanie rejestracji nowego użytkownika do serwera.
+        /// </summary>
+        /// <param name="registerRequestModel">Model danych żądania rejestracji zawierający dane nowego użytkownika.</param>
+        /// <returns>
+        /// Obiekt <see cref="RegistrationResultModel"/> wskazujący, czy rejestracja powiodła się,
+        /// oraz ewentualne błędy.
+        /// </returns>
         public async Task<RegistrationResultModel> RegisterAsync(RegisterRequestModel registerRequestModel)
         {
             string path = "/api/auth/register";
@@ -203,6 +216,7 @@ namespace KomunikatorClient.Services
                 Log.Information(
                     "AuthService: Wysyłanie żądania POST do rejestracji na adres: {Url} dla użytkownika {Username}",
                     registerEndpointUrl, registerRequestModel.Username);
+
                 HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(registerEndpointUrl,
                     registerRequestModel);
 
@@ -228,6 +242,7 @@ namespace KomunikatorClient.Services
                     List<IdentityErrorResponse>? errors = null;
                     try
                     {
+                        // Próba deserializacji treści błędu jako lista błędów tożsamości.
                         errors = await httpResponse.Content.ReadFromJsonAsync<List<IdentityErrorResponse>>();
                     }
                     catch (JsonException jj)

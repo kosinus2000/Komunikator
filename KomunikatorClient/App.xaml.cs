@@ -1,43 +1,45 @@
 ﻿using System.Windows;
 using Serilog;
 using Serilog.Events;
-using Microsoft.Extensions.DependencyInjection; 
-using System; 
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using KomunikatorClient.Services;
-using KomunikatorClient.DTOs;
 using KomunikatorClient.MVVM.View;
 using KomunikatorClient.MVVM.ViewModel;
 
 namespace KomunikatorClient
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// Logika interakcji dla App.xaml.
+    /// Klasa główna aplikacji, odpowiedzialna za konfigurację usług, logowania oraz zarządzanie cyklem życia aplikacji.
+    /// Dziedziczy po <see cref="Application"/>.
     /// </summary>
     public partial class App : Application
     {
-        
+        /// <summary>
+        /// Statyczna właściwość udostępniająca dostawcę usług (Service Provider)
+        /// umożliwiającego rozwiązywanie zależności (Dependency Injection) w całej aplikacji.
+        /// </summary>
         public static IServiceProvider ServiceProvider { get; private set; }
 
+        /// <summary>
+        /// Metoda wywoływana przy starcie aplikacji.
+        /// Odpowiada za konfigurację wstrzykiwania zależności (DI) oraz systemu logowania Serilog.
+        /// </summary>
+        /// <param name="e">Argumenty zdarzenia startowego.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            // 2. Utworzenie ServiceCollection
             var serviceCollection = new ServiceCollection();
 
-            // 3. Rejestracja serwisów jako Singleton
-            // Singleton oznacza, że będzie tylko jedna instancja tej klasy w całej aplikacji.
             serviceCollection.AddSingleton<AuthService>();
             serviceCollection.AddSingleton<CurrentUserSessionService>();
             serviceCollection.AddSingleton<MainWindow>();
             serviceCollection.AddSingleton<MainViewModel>();
-            // Możesz tu dodać inne serwisy, które chcesz rozwiązywać przez DI
-
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-
             base.OnStartup(e);
 
-            // --- Początek konfiguracji Serilog ---
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Debug()
@@ -48,11 +50,15 @@ namespace KomunikatorClient
                     outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
                 )
                 .CreateLogger();
-            // --- Koniec konfiguracji Serilog ---
 
             Log.Information("Aplikacja KomunikatorClient została uruchomiona. Serwisy zarejestrowane, Serilog skonfigurowany.");
         }
 
+        /// <summary>
+        /// Metoda wywoływana przy zamykaniu aplikacji.
+        /// Odpowiada za prawidłowe zamknięcie i opróżnienie buforów loggera Serilog.
+        /// </summary>
+        /// <param name="e">Argumenty zdarzenia zamknięcia.</param>
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Information("Aplikacja KomunikatorClient jest zamykana. Zapisywanie pozostałych logów.");

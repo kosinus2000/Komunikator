@@ -9,8 +9,11 @@ using KomunikatorShared.DTOs;
 using Microsoft.IdentityModel.Tokens;
 
 
-namespace KomunicatorServer.Controllers;
+namespace KomunikatorServer.Controllers;
 
+/// <summary>
+/// Kontroler API odpowiedzialny za operacje uwierzytelniania i autoryzacji, takie jak logowanie i rejestracja użytkowników.
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : Controller
@@ -20,6 +23,14 @@ public class AuthController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Konstruktor klasy AuthController.
+    /// Wstrzykuje niezbędne usługi do zarządzania użytkownikami, logowania i konfiguracji.
+    /// </summary>
+    /// <param name="signInManager">Menedżer do zarządzania logowaniem użytkowników.</param>
+    /// <param name="logger">Obiekt do logowania informacji i błędów.</param>
+    /// <param name="userManager">Menedżer do zarządzania użytkownikami.</param>
+    /// <param name="configuration">Konfiguracja aplikacji, używana do pobierania ustawień JWT.</param>
     public AuthController(SignInManager<AppUser> signInManager, ILogger<AuthController> logger,
         UserManager<AppUser> userManager, IConfiguration configuration)
     {
@@ -29,33 +40,33 @@ public class AuthController : Controller
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Obsługuje żądania logowania użytkownika.
+    /// Weryfikuje dane logowania i generuje token JWT w przypadku pomyślnego uwierzytelnienia.
+    /// </summary>
+    /// <param name="model">Model zawierający nazwę użytkownika i hasło do logowania.</param>
+    /// <returns>
+    /// <see cref="OkResult"/> z tokenem JWT i danymi użytkownika w przypadku sukcesu,
+    /// lub <see cref="UnauthorizedResult"/> / <see cref="BadRequestResult"/> w przypadku niepowodzenia.
+    /// </returns>
     [HttpPost]
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
     {
-        // Operator warunkowy -> jeźeli model jest null, to zwraca null i wywołuje sprawdzenie po ??(jeżeli jest null to zwraca tekst),
-        // w przeciwnym wypadku zwraca model
         _logger.LogInformation("Otrzymano żądanie POST na /api/auth/login dla użytkownika {Username}",
             model?.Username ?? "[brak nazwy]");
 
-        // Podstawowe sprawdzenie logowania
-        // ModelState jest odpowiedzialny za sprawdzenie informacji o walidacji przesyłąnych danych, wraz z 
-        // IsValid zwraca true lub false 
         if (!ModelState.IsValid)
         {
-            // --- czyli wywołuje się jeżeli nie ma true czyli w przypadku braku poprawnych danych ---
-            //
             _logger.LogWarning("Próba logowania z niepoprawnym modelem (ModelState invalid). Błędy: {@Errors}",
                 ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage));
 
-            // zwraca 400 bas request
             return BadRequest(ModelState);
         }
 
         try
         {
             _logger.LogInformation("Próba weryfikacji hasła dla użytkownika: {Username}", model.Username);
-
 
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user == null)
@@ -64,14 +75,12 @@ public class AuthController : Controller
                 return Unauthorized(new { Message = "Nieprawidłowa nazwa użytkownika lub hasło" });
             }
 
-
             var signInResult = await _signInManager.PasswordSignInAsync(
                 user.UserName,
                 model.Password,
                 isPersistent: false,
                 lockoutOnFailure: true
             );
-
 
             if (signInResult.Succeeded)
             {
@@ -113,6 +122,15 @@ public class AuthController : Controller
         }
     }
 
+    /// <summary>
+    /// Obsługuje żądania rejestracji nowego użytkownika.
+    /// Tworzy nowego użytkownika w systemie tożsamości.
+    /// </summary>
+    /// <param name="model">Model zawierający dane rejestracyjne nowego użytkownika (nazwa użytkownika, email, hasło).</param>
+    /// <returns>
+    /// <see cref="OkResult"/> w przypadku pomyślnej rejestracji,
+    /// lub <see cref="BadRequestResult"/> w przypadku niepowodzenia (np. niepoprawne dane, użytkownik już istnieje).
+    /// </returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestModel model)
     {
@@ -134,7 +152,7 @@ public class AuthController : Controller
             IdentityResult result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                _logger.LogInformation("Rejsctacja zakończona sukcesem dla użytkownika {Username}", model.Username);
+                _logger.LogInformation("Rejestracja zakończona sukcesem dla użytkownika {Username}", model.Username);
                 return Ok();
             }
             else
@@ -156,6 +174,12 @@ public class AuthController : Controller
         }
     }
 
+    /// <summary>
+    /// Generuje token JWT (JSON Web Token) dla podanego użytkownika.
+    /// Token zawiera identyfikator użytkownika, nazwę użytkownika i adres e-mail jako roszczenia (claims).
+    /// </summary>
+    /// <param name="user">Obiekt <see cref="AppUser"/>, dla którego ma zostać wygenerowany token.</param>
+    /// <returns>Wygenerowany token JWT jako ciąg znaków.</returns>
     private string GenerateJwtToken(AppUser user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
@@ -163,7 +187,6 @@ public class AuthController : Controller
         var issuer = jwtSettings["Issuer"];
         var audience = jwtSettings["Audience"];
 
-        // claim, czyli to na co chcemy wystawiać token
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -171,7 +194,6 @@ public class AuthController : Controller
             new Claim(ClaimTypes.Email, user.Email)
         };
 
-        
         var claimsIdentity = new ClaimsIdentity(claims);
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -185,7 +207,7 @@ public class AuthController : Controller
         };
 
         JwtSecurityTokenHandler securityToken = new JwtSecurityTokenHandler();
-        
+
         var token = securityToken.CreateToken(tokenDescriptor);
         var tokenString = securityToken.WriteToken(token);
 

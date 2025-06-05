@@ -4,11 +4,20 @@ using KomunikatorClient.MVVM.ViewModel;
 
 namespace KomunikatorClient.MVVM.View
 {
-    
+    /// <summary>
+    /// Główne okno aplikacji klienta komunikatora.
+    /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// Główny ViewModel powiązany z tym oknem.
+        /// </summary>
         private readonly MainViewModel _mainViewModel;
 
+        /// <summary>
+        /// Inicjalizuje nowe wystąpienie klasy MainWindow.
+        /// </summary>
+        /// <param name="mainViewModel">ViewModel przekazany przez DI do powiązania z widokiem.</param>
         public MainWindow(MainViewModel mainViewModel)
         {
             InitializeComponent();
@@ -16,29 +25,30 @@ namespace KomunikatorClient.MVVM.View
             this.DataContext = _mainViewModel;
         }
 
+        /// <summary>
+        /// Umożliwia przeciąganie okna po ekranie po wciśnięciu lewego przycisku myszy.
+        /// </summary>
         private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-           
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                
-                if (this.WindowState == WindowState.Maximized)
-                {
-                    // Opcjonalnie: Jeśli okno jest zmaksymalizowane, przy kliknięciu paska tytułowego
-                    // i przeciągnięciu, możesz przywrócić je do normalnego rozmiaru i zacząć przeciągać.
-                    // Wymaga to bardziej złożonej logiki, aby obliczyć nową pozycję.
-                    // Na razie, można po prostu wyjść z metody lub przywrócić do normalnego stanu.
-                    // this.WindowState = WindowState.Normal;
-                }
-
+                // Uwaga: przy przeciąganiu zmaksymalizowanego okna można dodać logikę, 
+                // która najpierw przywraca je do normalnego rozmiaru i kontynuuje przeciąganie.
                 this.DragMove();
             }
         }
+
+        /// <summary>
+        /// Minimalizuje okno aplikacji.
+        /// </summary>
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Przełącza okno między stanem normalnym a zmaksymalizowanym.
+        /// </summary>
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
             switch (this.WindowState)
@@ -52,14 +62,21 @@ namespace KomunikatorClient.MVVM.View
             }
         }
 
+        /// <summary>
+        /// Zamyka aplikację.
+        /// </summary>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
+        /// <summary>
+        /// Obsługuje zmianę zaznaczenia w liście (np. zmiana aktywnego czatu).
+        /// Aktualnie pusta – możesz tu dodać logikę np. przełączenia widoku.
+        /// </summary>
         private void ListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-
+            // TODO: Dodaj tutaj logikę zmiany zawartości głównego panelu na podstawie wyboru z listy.
         }
     }
 }
