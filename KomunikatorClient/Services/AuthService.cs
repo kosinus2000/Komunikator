@@ -11,6 +11,7 @@ using System.Net.Http.Json;
 using KomunikatorClient.DTOs;
 using KomunikatorShared.DTOs;
 using System.Net.Http.Headers;
+using System.Windows.Controls;
 
 namespace KomunikatorClient.Services
 {
@@ -23,7 +24,7 @@ namespace KomunikatorClient.Services
         // Konstruktor AuthService, który inicjalizuje HttpClient
         public AuthService(CurrentUserSessionService currentUserSessionService)
         {
-            var handler = new HttpClientHandler();
+            HttpClientHandler handler = new HttpClientHandler();
 
             _httpClient = new HttpClient(handler);
 
@@ -33,8 +34,6 @@ namespace KomunikatorClient.Services
         {
             if (!string.IsNullOrEmpty(token))
             {
-                // Ustawia domyślny nagłówek Authorization dla wszystkich kolejnych żądań
-                // wysyłanych przez tę instancję _httpClient.
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 Log.Debug("AuthService: Ustawiono nagłówek autoryzacji z tokenem.");
             }
@@ -97,13 +96,10 @@ namespace KomunikatorClient.Services
 
                 if (httpResponse.IsSuccessStatusCode)
                 {
-                    // --- Logowanie zakończone sukcesem po stronie klienta ---
                     Log.Information(
                         "AuthService: Logowanie przebiegło pomyślnie dla użytkownika {Username}. Status: {StatusCode}",
                         loginRequestModel.Username, httpResponse.StatusCode);
 
-                    // Deserializacja odpowiedzi sukcesu z serwera
-                    // Pamiętaj, że serwer ma zwracać obiekt LoginSuccessResponse
 
                     LoginSuccessResponse? loginResponse = null;
                     try
@@ -115,8 +111,6 @@ namespace KomunikatorClient.Services
                         Log.Error(jsonEx, "AuthService: Błąd deserializacji LoginSuccessResponse. Treść odpowiedzi: {Content}",
                                   await httpResponse.Content.ReadAsStringAsync());
 
-                        // Jeśli nie uda się zdeserializować odpowiedzi sukcesu,
-                        // traktujemy to jako błąd i nie zapisujemy sesji.
                         Log.Warning("AuthService: Nie udało się zdeserializować LoginSuccessResponse. Sprawdź, czy serwer zwraca poprawny format JSON.");
                         return false;
                     }
@@ -125,6 +119,10 @@ namespace KomunikatorClient.Services
                     {
 
                         _currentUserSessionService.SetUserSession(loginResponse);
+                        Log.Information("AuthService: Użytkownik {Username} zalogowany pomyślnie. Token: {Token}",
+                                        loginResponse.Username, loginResponse.Token);
+                        // ---Ustawienie nagłówka autoryzacji z tokenem---
+                        SetAuthorizationHeader(loginResponse.Token);
                         Log.Information("AuthService: Dane sesji użytkownika dla {Username} zapisane.", loginResponse.Username);
                         return true;
                     }
@@ -132,10 +130,10 @@ namespace KomunikatorClient.Services
                     {
                         Log.Warning("AuthService: Logowanie pomyślne (status {StatusCode}), ale token lub dane użytkownika są puste.",
                                     httpResponse.StatusCode);
-                        return false; // Traktujemy jako błąd, jeśli nie ma tokena
+                        return false;
                     }
                 }
-                else // Status odpowiedzi nie jest sukcesem (np. 400, 401, 403, 500)
+                else
                 {
                     string errorContent = await httpResponse.Content.ReadAsStringAsync();
 
@@ -144,12 +142,11 @@ namespace KomunikatorClient.Services
                         loginRequestModel.Username, httpResponse.StatusCode,
                         string.IsNullOrEmpty(errorContent) ? "[Brak]" : errorContent);
 
-                    // Próba deserializacji błędu, jeśli serwer zwraca błędy w formacie List<IdentityErrorResponse>
+
                     List<IdentityErrorResponse>? errors = null;
                     if (!string.IsNullOrEmpty(errorContent))
                         try
                         {
-                            // Upewnij się, że masz using System.Collections.Generic; i using System.Linq;
                             errors = JsonSerializer.Deserialize<List<IdentityErrorResponse>>(errorContent);
                         }
                         catch (JsonException jj)
@@ -163,27 +160,25 @@ namespace KomunikatorClient.Services
                     {
                         string errorMessages = string.Join("\n- ", errors.Select(e => e.Description));
                         Log.Warning("AuthService: Szczegółowe błędy logowania z serwera:\n- {Errors}", errorMessages);
-                        // Tutaj możesz zdecydować, czy chcesz zwrócić te szczegółowe błędy do UI
-                        // Obecnie metoda zwraca bool, więc po prostu logujemy.
                     }
 
-                    return false; // Logowanie nieudane
+                    return false;
                 }
             }
-            catch (HttpRequestException e) // Problemy z połączeniem, serwer nieosiągalny itp.
+            catch (HttpRequestException e)
             {
                 Log.Error(e,
                     "AuthService: Błąd żądania HTTP podczas logowania dla {Username}. Serwer może być nieosiągalny lub wystąpił problem z siecią. Sprawdź adres: {Url}",
                     loginRequestModel.Username, loginEndpointUrl);
                 return false;
             }
-            catch (JsonException e) // Błędy serializacji/deserializacji JSON
+            catch (JsonException e)
             {
                 Log.Error(e, "AuthService: Błąd JSON podczas logowania dla {Username}. Problem z serializacją żądania lub deserializacją odpowiedzi.",
                     loginRequestModel.Username);
                 return false;
             }
-            catch (Exception e) // Inne, nieoczekiwane wyjątki
+            catch (Exception e)
             {
                 Log.Error(e, "AuthService: Nieoczekiwany błąd podczas logowania użytkownika {Username}",
                     loginRequestModel.Username);
