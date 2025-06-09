@@ -35,8 +35,6 @@ namespace KomunikatorClient.MVVM.View
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                // Uwaga: przy przeciąganiu zmaksymalizowanego okna można dodać logikę, 
-                // która najpierw przywraca je do normalnego rozmiaru i kontynuuje przeciąganie.
                 this.DragMove();
             }
         }
@@ -98,9 +96,7 @@ namespace KomunikatorClient.MVVM.View
         }
         public void OnLogoutRequested(object? sender, EventArgs e)
         {
-            // Logika wylogowania użytkownika
-            this.Close(); // Zamknięcie okna głównego
-            // Otwieramy okno LoginWindow, pobierając je z globalnego ServiceProvider
+            this.Close();
             LoginWindow loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
         }
