@@ -46,48 +46,41 @@ namespace KomunikatorServer.Data
         {
             base.OnModelCreating(builder);
 
-            // Konfiguracja klucza głównego w tabeli UserContacts (złożony klucz).
             builder.Entity<UserContact>()
                 .HasKey(uc => new { uc.UserId, uc.ContactId });
-
-            // Relacja: UserContact → User
+            
+            // Konfiguracja klucza głównego w tabeli UserContacts (złożony klucz).
             builder.Entity<UserContact>()
-                .HasOne(uc => uc.User)
-                .WithMany()
+                .HasOne(uc => uc.User)       // UserContact ma jednego Usera
+                .WithMany(u => u.AddedContacts) // User ma wiele AddedContacts
                 .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relacja: UserContact → Contact
             builder.Entity<UserContact>()
-                .HasOne(uc => uc.Contact)
-                .WithMany()
+                .HasOne(uc => uc.Contact)    // UserContact ma jednego Contacta
+                .WithMany(u => u.IsContactOf) // Contact jest w wielu IsContactOf
                 .HasForeignKey(uc => uc.ContactId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relacje w klasie AppUser
-            builder.Entity<AppUser>()
-                .HasMany(u => u.AddedContacts)
-                .WithOne(uc => uc.User);
 
-            builder.Entity<AppUser>()
-                .HasMany(u => u.IsContactOf)
-                .WithOne(uc => uc.Contact);
-
+            // Konfiguracja ChatMessage
             builder.Entity<ChatMessage>()
                 .HasKey(cm => cm.Id);
 
-            builder.Entity<ChatMessage>().HasOne(cm => cm.Sender)
-                .WithMany()
+            builder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Sender)      // Wiadomość ma jednego Nadawcę
+                .WithMany(u => u.SentMessages) // Nadawca ma wiele wysłanych wiadomości
                 .HasForeignKey(cm => cm.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Receiver)
-                .WithMany()
+                .HasOne(cm => cm.Receiver)    // Wiadomość ma jednego Odbiorcę
+                .WithMany(u => u.ReceivedMessages) // Odbiorca ma wiele odebranych wiadomości
                 .HasForeignKey(cm => cm.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Modyfikacje nazw tabel domyślnych encji Identity (opcjonalnie dla czytelności bazy danych).
+
+            
             builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims");
             builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles");
         }
