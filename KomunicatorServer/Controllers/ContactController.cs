@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KomunikatorServer.Controllers
 {
@@ -35,39 +37,65 @@ namespace KomunikatorServer.Controllers
         }
 
         /// <summary>
-        /// Zwraca listę wszystkich użytkowników jako potencjalnych kontaktów.
+        /// Pobiera listę kontaktów powiązanych z aktualnie uwierzytelnionym użytkownikiem.
         /// </summary>
-        /// <returns>Lista kontaktów w postaci <see cref="ContactDto"/>.</returns>
-        [Authorize]
+        /// <returns>Zadanie reprezentujące asynchroniczną operację. Wynik zadania zawiera <see cref="ActionResult"/>
+        /// opakowujący listę obiektów <see cref="ContactDto"/>, reprezentujących kontakty użytkownika.</returns>
+       [Authorize]
         [HttpGet("getContacts")]
         public async Task<ActionResult<List<ContactDto>>> GetContacts()
         {
             _logger.LogInformation("Otrzymano żądanie GET na /api/contact/getContacts");
 
-            var contacts = await _userManager.Users
-                .Select(user => new ContactDto
+            try
+            {
+                string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (currentUserId == null)
                 {
-                    Id = user.Id,
-                    Username = user.UserName,
-                    Email = user.Email,
-                    RegistrationDate = user.RegistrationDate
-                })
-                .ToListAsync();
+                    _logger.LogWarning(
+                        "Użytkownik nie jest zalogowany, mimo atrybutu [Authorize]. Brak ClaimTypes.NameIdentifier.");
+                    return Unauthorized(new { Message = "Błąd autoryzacji. Użytkownik nie jest zalogowany." });
+                }
 
-            _logger.LogInformation("Zwracam {Count} kontaktów.", contacts.Count);
-            return Ok(contacts);
+                var contacts = await _dbContext.UserContacts
+                    .Where(uc => uc.UserId == currentUserId)
+                    .Include(uc => uc.Contact)
+                    .Select(uc => new ContactDto
+                    {
+                        Id = uc.Contact.Id,
+                        Username = uc.Contact.UserName,
+                        Email = uc.Contact.Email,
+                        RegistrationDate = uc.Contact.RegistrationDate,
+                        DisplayName = uc.Contact.DisplayName
+                    }).ToListAsync();
+                _logger.LogInformation("Zwracam {Count} kontaktów dla użytkownika {Username}.", contacts.Count,
+                    User.Identity.Name);
+                return Ok(contacts);
+                return Ok(contacts);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Wystąpił błąd serwera podczas pobierania kontaktów dla użytkownika {Username}.",
+                    User.Identity.Name);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Message = "Wystąpił błąd serwera podczas pobierania kontaktów." });
+            }
         }
 
+        /// <summary>
+        /// Dodaje nowy kontakt dla użytkownika.
+        /// </summary>
+        /// <param name="request">Obiekt żądania zawierający dane dotyczące kontaktu do dodania.</param>
+        /// <returns>Wynik operacji w postaci odpowiedzi HTTP. W przypadku powodzenia metoda zwraca kod HTTP 201 (Created). W przypadku błędów walidacji lub serwera metoda zwraca odpowiedni kod błędu.</returns>
         [Authorize]
         [HttpPost("addContact")]
         public async Task<IActionResult> AddContact([FromBody] AddContactRequest request)
         {
-            // === Zaczynamy od bloku try-catch dla całej akcji ===
             try
             {
                 _logger.LogInformation("Otrzymano żądanie POST na /api/Contacts/addContact.");
 
-                // 1. Podstawowa walidacja requesta
+                //Podstawowa walidacja requesta
                 if (request == null || (string.IsNullOrEmpty(request.Username) && string.IsNullOrEmpty(request.UserId)))
                 {
                     _logger.LogWarning(
@@ -75,7 +103,7 @@ namespace KomunikatorServer.Controllers
                     return BadRequest(new { Message = "Musisz podać nazwę użytkownika lub ID kontaktu do dodania." });
                 }
 
-                // Opcjonalna walidacja ModelState.IsValid, jeśli masz atrybuty walidacji na DTO
+                //walidacja, na wypadek braku [Authenticate]
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning(
@@ -84,7 +112,7 @@ namespace KomunikatorServer.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // 2. Pobierz ID zalogowanego użytkownika (aktualnego użytkownika)
+                //Pobranie id usera
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (currentUserId == null)
                 {
@@ -93,9 +121,8 @@ namespace KomunikatorServer.Controllers
                     return Unauthorized(new { Message = "Błąd autoryzacji. Użytkownik nie jest zalogowany." });
                 }
 
-                // 3. Znajdź użytkownika, którego chcemy dodać jako kontakt
-                // Deklarujemy contactUser tutaj, aby był dostępny w całym bloku.
-                AppUser contactUser = null; // <--- DODAJ DEKLARACJĘ TUTAJ
+                //wyszukanie uzytkownika który ma być dodoany jako kontakt
+                AppUser contactUser = null;
 
                 if (!string.IsNullOrEmpty(request.UserId))
                 {
@@ -114,7 +141,7 @@ namespace KomunikatorServer.Controllers
                     return NotFound(new { Message = "Użytkownik do dodania jako kontakt nie został znaleziony." });
                 }
 
-                // 4. Walidacja biznesowa (czy użytkownik nie dodaje siebie, czy już nie jest kontaktem)
+                //walidacja, czy użytkownik nie dodaje sam siebie jako kontaktu
                 if (contactUser.Id == currentUserId)
                 {
                     _logger.LogWarning("Użytkownik {Username} próbował dodać samego siebie do kontaktów.",
@@ -122,7 +149,7 @@ namespace KomunikatorServer.Controllers
                     return BadRequest(new { Message = "Nie możesz dodać samego siebie do kontaktów." });
                 }
 
-                // Sprawdź, czy kontakt już istnieje (w tabeli UserContacts)
+                //sprawdzenie czy użytkownik już istnieje w bazie danych jako kontakt
                 bool contactAlreadyExists = await _dbContext.UserContacts
                     .AnyAsync(uc => uc.UserId == currentUserId && uc.ContactId == contactUser.Id);
 
@@ -134,21 +161,21 @@ namespace KomunikatorServer.Controllers
                         { Message = "Ten użytkownik jest już na Twojej liście kontaktów." }); // 409 Conflict
                 }
 
-                // 5. Utwórz nowy kontakt w bazie danych
+                // utworzenie nowego kontaktu w bazie danych
                 var newContactEntry = new UserContact
                 {
                     UserId = currentUserId,
                     ContactId = contactUser.Id,
                     AddedDate = DateTime.UtcNow
                 };
-
+                //dodanie nowego kontaktu do bazy danych
                 _dbContext.UserContacts.Add(newContactEntry);
                 await _dbContext.SaveChangesAsync();
 
                 _logger.LogInformation("Użytkownik {Username} pomyślnie dodał kontakt: {ContactUsername}",
                     User.Identity.Name, contactUser.UserName);
                 return CreatedAtAction(nameof(GetContacts), new { id = contactUser.Id },
-                    new { Message = "Kontakt został pomyślnie dodany." }); // 201 Created
+                    new { Message = "Kontakt został pomyślnie dodany." });
             }
             catch (Exception ex)
             {

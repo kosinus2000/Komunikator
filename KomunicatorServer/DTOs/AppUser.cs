@@ -11,7 +11,7 @@ namespace KomunikatorServer.DTOs
         public ICollection<UserContact> IsContactOf { get; set; }  
         public ICollection<ChatMessage> SentMessages { get; set; }
         public ICollection<ChatMessage> ReceivedMessages { get; set; }
-
+        public string? DisplayName { get; set; }
         
         /// <summary>
         /// Pobiera lub ustawia datę rejestracji użytkownika.
