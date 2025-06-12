@@ -29,5 +29,10 @@
         /// Wyświetlana nazwa kontaktu (opcjonalna).
         /// </summary>
         public string? DisplayName { get; set; }
+
+        /// <summary>
+        /// URL do zdjęcia profilowego użytkownika.
+        /// </summary>
+        public string? ProfilePictureUrl { get; set; }
     }
 }

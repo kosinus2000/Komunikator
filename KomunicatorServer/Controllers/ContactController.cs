@@ -65,12 +65,12 @@ namespace KomunikatorServer.Controllers
                         Id = uc.Contact.Id,
                         Username = uc.Contact.UserName,
                         Email = uc.Contact.Email,
+                        ProfilePictureUrl = uc.Contact.ProfilePictureUrl ?? "KomunicatorServer/wwwroot/ProfilePictures/icons8-male-user-32.png",
                         RegistrationDate = uc.Contact.RegistrationDate,
                         DisplayName = uc.Contact.DisplayName
                     }).ToListAsync();
                 _logger.LogInformation("Zwracam {Count} kontaktów dla użytkownika {Username}.", contacts.Count,
                     User.Identity.Name);
-                return Ok(contacts);
                 return Ok(contacts);
             }
             catch (Exception e)

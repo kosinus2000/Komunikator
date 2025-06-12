@@ -25,6 +25,8 @@ namespace KomunikatorClient.MVVM.View
             InitializeComponent();
             _mainViewModel = mainViewModel;
             this.DataContext = _mainViewModel;
+            _ = _mainViewModel.LoadContactsAsync(); //Wywołanie asynchrnonicznej metody dodoawania kontaktów w konstruktorze,
+                                                    //który  nie może być asynch
             _mainViewModel.LogoutRequested += OnLogoutRequested;
         }
 
@@ -94,6 +96,7 @@ namespace KomunikatorClient.MVVM.View
                 img.ContextMenu.IsOpen = true;
             }
         }
+
         public void OnLogoutRequested(object? sender, EventArgs e)
         {
             this.Close();

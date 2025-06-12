@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Documents;
 using KomunikatorClient.Core;
 using KomunikatorClient.MVVM.Model;
 using KomunikatorClient.Services;
+using KomunikatorServer.DTOs;
+using Serilog;
 
 namespace KomunikatorClient.MVVM.ViewModel;
 
@@ -11,6 +14,8 @@ namespace KomunikatorClient.MVVM.ViewModel;
 /// </summary>
 public class MainViewModel : ObservableObject
 {
+    private UserService _userService;
+
     /// <summary>
     /// Kolekcja wiadomości wyświetlanych w aktywnym czacie.
     /// </summary>
@@ -30,6 +35,7 @@ public class MainViewModel : ObservableObject
     /// Komenda do wysyłania wiadomości.
     /// </summary>
     public RelayCommand SendCommand { get; set; }
+
 
     private ContactModel _selectedContact;
 
@@ -83,11 +89,14 @@ public class MainViewModel : ObservableObject
     /// Ustawia domyślne dane, wiąże komendy i subskrybuje zmiany sesji użytkownika.
     /// </summary>
     /// <param name="currentUserSessionService">Serwis zarządzający bieżącą sesją użytkownika.</param>
-    public MainViewModel(CurrentUserSessionService currentUserSessionService)
+    public MainViewModel(CurrentUserSessionService currentUserSessionService, UserService userService)
     {
         Messages = new ObservableCollection<MessageModel>();
         Contacts = new ObservableCollection<ContactModel>();
         CurrentUserSessionService = currentUserSessionService;
+        _userService = userService;
+
+        LoadContactsAsync();
 
         LogoutCommand = new RelayCommand(o =>
         {
@@ -110,6 +119,7 @@ public class MainViewModel : ObservableObject
 
             Message = string.Empty;
         });
+
 
         // Tymczasowe dane testowe
         Messages.Add(new MessageModel
@@ -147,5 +157,44 @@ public class MainViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(DisplayedContactName));
         }
+    }
+
+    public async Task LoadContactsAsync()
+    {
+        Log.Information("MainViewModel: Rozpoczynam ładowanie kontaktów.");
+        try
+        {
+            List<ContactDto> contactDtos = await _userService.GetContactsAsync();
+            Contacts.Clear();
+            if (contactDtos != null && contactDtos.Any())
+            {
+                foreach (var dto in contactDtos)
+                {
+                    ContactModel model = MapContactDtoToModel(dto); 
+                    Contacts.Add(model); 
+                }
+                Log.Information("MainViewModel: Pomyślnie załadowano {Count} kontaktów.", Contacts.Count);
+            }
+            else
+            {
+                Log.Information("MainViewModel: Nie znaleziono żadnych kontaktów lub lista jest pusta.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "MainViewModel: Błąd podczas ładowania kontaktów.");
+        }
+    }
+
+
+    private ContactModel MapContactDtoToModel(ContactDto contactDto)
+    {
+        ContactModel contactModel = new ContactModel
+        {
+            Username = contactDto.Username,
+            ImageSource = contactDto.ProfilePictureUrl ?? "/Images/icons8-male-user-64.png",
+            Messages = new ObservableCollection<MessageModel>()
+        };
+        return contactModel;
     }
 }

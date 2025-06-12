@@ -12,6 +12,7 @@ namespace KomunikatorServer.DTOs
         public ICollection<ChatMessage> SentMessages { get; set; }
         public ICollection<ChatMessage> ReceivedMessages { get; set; }
         public string? DisplayName { get; set; }
+        public string? ProfilePictureUrl { get; set; }
         
         /// <summary>
         /// Pobiera lub ustawia datę rejestracji użytkownika.

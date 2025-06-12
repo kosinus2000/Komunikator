@@ -6,6 +6,7 @@ using System;
 using KomunikatorClient.Services;
 using KomunikatorClient.MVVM.View;
 using KomunikatorClient.MVVM.ViewModel;
+using System.Net.Http;
 
 namespace KomunikatorClient
 {
@@ -31,11 +32,13 @@ namespace KomunikatorClient
         {
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.AddSingleton<HttpClient>();
             serviceCollection.AddTransient<LoginWindow>();
             serviceCollection.AddSingleton<AuthService>();
             serviceCollection.AddSingleton<CurrentUserSessionService>();
             serviceCollection.AddSingleton<MainWindow>();
             serviceCollection.AddSingleton<KomunikatorClient.MVVM.ViewModel.MainViewModel>();
+            serviceCollection.AddSingleton<UserService>();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 

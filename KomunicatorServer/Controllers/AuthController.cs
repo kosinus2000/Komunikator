@@ -91,6 +91,7 @@ public class AuthController : Controller
                 return Ok(new LoginSuccessResponse
                 {
                     UserId = user.Id,
+                    ProfilePictureUrl = user.ProfilePictureUrl ?? "KomunicatorServer/wwwroot/ProfilePictures/icons8-male-user-32.png",
                     Username = user.UserName,
                     Token = tokenos
                 });

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\KomunikatorShared\KomunikatorShared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="wwwroot\ProfilePictures\icons8-male-user-32.png" />
+  </ItemGroup>
+
 </Project>
