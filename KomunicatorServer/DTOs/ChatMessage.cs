@@ -1,4 +1,6 @@
-﻿namespace KomunikatorServer.DTOs
+﻿using KomunikatorServer.DTOs;
+
+namespace KomunikatorShared.DTOs
 {
     /// <summary>
     /// Reprezentuje wiadomość czatu przesyłaną między użytkownikami.

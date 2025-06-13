@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using KomunikatorShared.DTOs;
 
 namespace KomunikatorServer.DTOs
 {
