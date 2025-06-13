@@ -14,6 +14,14 @@ using KomunikatorShared.DTOs;
 
 namespace KomunikatorServer.Controllers;
 
+/// <summary>
+/// Controller responsible for handling authentication-related actions such as user login and registration.
+/// </summary>
+/// <remarks>
+/// This controller exposes endpoints for user authentication, including:
+/// - Logging in existing users
+/// - Registering new users
+/// </remarks>
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : Controller

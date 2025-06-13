@@ -7,50 +7,41 @@ using Serilog;
 
 namespace KomunikatorClient.Services;
 
+/// <summary>
+/// Serwis odpowiedzialny za obsługę operacji związanych z użytkownikiem w aplikacji.
+/// </summary>
 public class UserService
 {
     private readonly HttpClient _httpClient;
     private const string ServerApiBaseUrl = "https://localhost:7233";
-    private readonly CurrentUserSessionService _currentUserSessionService;
+
+    /// <summary>
+    /// Serwis odpowiedzialny za obsługę operacji związanych z użytkownikiem w aplikacji.
+    /// </summary>
 
     public UserService(CurrentUserSessionService currentUserSessionService, HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _currentUserSessionService = currentUserSessionService;
 
         Log.Information("UserService: HttpClient utworzony. BaseAddress: {BaseAddress}",
             _httpClient.BaseAddress?.ToString() ?? "null");
     }
 
-    public void SetAuthToken(string token)
-    {
-        if (!string.IsNullOrEmpty(token))
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            Log.Information("UserService: Token ustawiony. Długość: {Length} znaków", token.Length);
-
-            // Debug: pokaż pierwsze i ostatnie znaki tokenu
-            var tokenPreview = token.Length > 20 ?
-                $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}" :
-                token;
-            Log.Information("UserService: Token preview: {TokenPreview}", tokenPreview);
-        }
-        else
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            Log.Warning("UserService: Token usunięty (pusty)");
-        }
-    }
-
+    /// <summary>
+    /// Asynchroniczna metoda odpowiedzialna za pobieranie listy kontaktów użytkownika
+    /// z serwera przy użyciu żądania HTTP GET.
+    /// </summary>
+    /// <returns>
+    /// Lista obiektów typu ContactDto reprezentujących kontakty użytkownika.
+    /// Jeśli wystąpi błąd lub brak autoryzacji, zwracana jest pusta lista.
+    /// </returns>
     public async Task<List<ContactDto>> GetContactsAsync()
     {
-        // POPRAWIONY URL - wielka litera C w Contact!
         string endpointUrl = $"{ServerApiBaseUrl}/api/Contacts/getContacts";
 
-        Log.Information("UserService: === ROZPOCZYNAM GetContactsAsync ===");
+        Log.Information("UserService:  ! === ROZPOCZYNAM GetContactsAsync === ! ");
         Log.Information("UserService: URL: {Url}", endpointUrl);
-
-        // Sprawdź stan autoryzacji
+        
         var authHeader = _httpClient.DefaultRequestHeaders.Authorization;
         if (authHeader == null)
         {
@@ -74,8 +65,7 @@ public class UserService
             Log.Information("  - Status Code: {StatusCode} ({StatusCodeNumber})", response.StatusCode, (int)response.StatusCode);
             Log.Information("  - Reason Phrase: {ReasonPhrase}", response.ReasonPhrase ?? "null");
             Log.Information("  - Headers Count: {HeadersCount}", response.Headers.Count());
-
-            // Wyświetl wszystkie headery odpowiedzi dla debugowania
+            
             foreach (var header in response.Headers)
             {
                 Log.Information("  - Response Header: {Key} = {Value}", header.Key, string.Join(", ", header.Value));
@@ -108,8 +98,7 @@ public class UserService
                 Log.Error("UserService: Żądanie nieudane!");
                 Log.Error("  - Status: {StatusCode}", response.StatusCode);
                 Log.Error("  - Error Content: {ErrorContent}", errorContent);
-
-                // Szczególne traktowanie błędu 401 Unauthorized
+                
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     Log.Error("UserService: BŁĄD AUTORYZACJI - sprawdź token JWT!");
@@ -130,7 +119,7 @@ public class UserService
         }
         finally
         {
-            Log.Information("UserService: === ZAKOŃCZONO GetContactsAsync ===");
+            Log.Information("UserService:! === ZAKOŃCZONO GetContactsAsync === !");
         }
     }
 }

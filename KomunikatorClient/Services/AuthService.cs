@@ -10,20 +10,35 @@ using Serilog;
 using KomunikatorClient.DTOs;
 using KomunikatorShared.DTOs; // Upewnij się, że to jest poprawny using dla DTOs
 
+
 namespace KomunikatorClient.Services
 {
+    /// <summary>
+    /// Zapewnia funkcjonalność do zarządzania uwierzytelnianiem użytkownika, w tym operacjami logowania i rejestracji,
+    /// a także obsługą nagłówków autoryzacyjnych dla żądań HTTP.
+    /// </summary>
     public class AuthService
     {
         private readonly HttpClient _httpClient;
         private const string ServerApiBaseUrl = "https://localhost:7233";
         private readonly CurrentUserSessionService _currentUserSessionService;
 
+        /// <summary>
+        /// Odpowiada za obsługę procesów uwierzytelniania użytkownika, takich jak logowanie, rejestracja oraz zarządzanie nagłówkiem autoryzacyjnym w żądaniach HTTP.
+        /// </summary>
         public AuthService(CurrentUserSessionService currentUserSessionService, HttpClient httpClient)
         {
             _httpClient = httpClient;
             _currentUserSessionService = currentUserSessionService;
         }
 
+        /// <summary>
+        /// Ustawia nagłówek autoryzacyjny typu Bearer z podanym tokenem dostępu.
+        /// Jeśli podany token jest pusty lub null, nagłówek autoryzacyjny zostaje usunięty.
+        /// </summary>
+        /// <param name="token">
+        /// Token dostępu do uwierzytelniania użytkownika. Może być null.
+        /// </param>
         public void SetAuthorizationHeader(string? token)
         {
             if (!string.IsNullOrEmpty(token))
@@ -37,12 +52,20 @@ namespace KomunikatorClient.Services
             }
         }
 
+        /// <summary>
+        /// Usuwa nagłówek autoryzacyjny z bieżącego klienta HTTP, jeśli jest ustawiony.
+        /// </summary>
         public void ClearAuthorizationHeader()
         {
             _httpClient.DefaultRequestHeaders.Authorization = null;
             Log.Debug("AuthService: Usunięto nagłówek autoryzacji.");
         }
 
+        /// <summary>
+        /// Uwierzytelnia użytkownika, wysyłając żądanie logowania do serwera.
+        /// </summary>
+        /// <param name="loginRequestModel">Obiekt żądania logowania zawierający dane uwierzytelniające użytkownika.</param>
+        /// <returns>Zadanie reprezentujące operację asynchroniczną. Jeśli operacja się powiedzie, zwraca true; w przeciwnym razie zwraca false.</returns>
         public async Task<bool> LoginAsync(LoginRequestModel loginRequestModel)
         {
             string path = "/api/auth/login";
@@ -131,12 +154,7 @@ namespace KomunikatorClient.Services
                 return false;
             }
         }
-
-
-
-
-
-
+        
         /// <summary>
         /// Reprezentuje wynik operacji rejestracji, wskazując, czy zakończyła się sukcesem
         /// oraz dostarczając listę błędów w przypadku niepowodzenia.

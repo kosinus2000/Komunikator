@@ -97,6 +97,11 @@ namespace KomunikatorClient.MVVM.View
             }
         }
 
+        /// <summary>
+        /// Obsługuje zdarzenie żądania wylogowania, zamykając główne okno i otwierając okno logowania.
+        /// </summary>
+        /// <param name="sender">Źródło zdarzenia, które wywołało żądanie wylogowania.</param>
+        /// <param name="e">Dane zdarzenia związane z żądaniem wylogowania.</param>
         public void OnLogoutRequested(object? sender, EventArgs e)
         {
             this.Close();

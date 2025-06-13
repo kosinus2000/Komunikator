@@ -137,6 +137,13 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Asynchronicznie ładuje listę kontaktów dla bieżącego użytkownika.
+    /// Pobiera dane kontaktów z serwisu użytkownika, mapuje je na modele
+    /// i dodaje do kolekcji kontaktów.
+    /// Loguje odpowiednie informacje lub błędy związane z procesem ładowania.
+    /// </summary>
+    /// <returns>Task reprezentujący wykonanie operacji ładowania kontaktów.</returns>
     public async Task LoadContactsAsync()
     {
         Log.Information("MainViewModel: Rozpoczynam ładowanie kontaktów.");
@@ -164,7 +171,11 @@ public class MainViewModel : ObservableObject
         }
     }
 
-
+    /// <summary>
+    /// Mapuje obiekt <see cref="ContactDto"/> na model <see cref="ContactModel"/>.
+    /// </summary>
+    /// <param name="contactDto">Obiekt danych kontaktu użytkownika uzyskany z API.</param>
+    /// <returns>Zmapowany obiekt <see cref="ContactModel"/> odpowiadający podanym danym DTO.</returns>
     private ContactModel MapContactDtoToModel(ContactDto contactDto)
     {
         ContactModel contactModel = new ContactModel
