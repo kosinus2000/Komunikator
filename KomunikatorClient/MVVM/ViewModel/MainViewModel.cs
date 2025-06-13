@@ -1,189 +1,168 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows.Documents;
+using System.Linq;
+using System.Threading.Tasks;
 using KomunikatorClient.Core;
 using KomunikatorClient.MVVM.Model;
 using KomunikatorClient.Services;
 using KomunikatorServer.DTOs;
+using KomunikatorShared.DTOs;
 using Serilog;
 
-namespace KomunikatorClient.MVVM.ViewModel;
-
-/// <summary>
-/// Główny ViewModel aplikacji, zarządzający logiką okna głównego.
-/// </summary>
-public class MainViewModel : ObservableObject
+namespace KomunikatorClient.MVVM.ViewModel
 {
-    private UserService _userService;
-
-    /// <summary>
-    /// Kolekcja wiadomości wyświetlanych w aktywnym czacie.
-    /// </summary>
-    public ObservableCollection<MessageModel> Messages { get; set; }
-
-    /// <summary>
-    /// Kolekcja kontaktów użytkownika.
-    /// </summary>
-    public ObservableCollection<ContactModel> Contacts { get; set; }
-
-    /// <summary>
-    /// Serwis przechowujący informacje o aktualnie zalogowanym użytkowniku.
-    /// </summary>
-    public CurrentUserSessionService CurrentUserSessionService { get; }
-
-    /// <summary>
-    /// Komenda do wysyłania wiadomości.
-    /// </summary>
-    public RelayCommand SendCommand { get; set; }
-
-
-    private ContactModel _selectedContact;
-
-    /// <summary>
-    /// Aktualnie wybrany kontakt; jego wiadomości są wyświetlane.
-    /// </summary>
-    public ContactModel SelectedContact
+    public class MainViewModel : ObservableObject
     {
-        get => _selectedContact;
-        set
+        private readonly UserService _userService;
+
+        public ObservableCollection<MessageModel> Messages { get; set; }
+        public ObservableCollection<ContactModel> Contacts { get; set; }
+        public CurrentUserSessionService CurrentUserSessionService { get; }
+
+        public RelayCommand SendCommand { get; set; }
+        public RelayCommand LogoutCommand { get; set; }
+
+        private ContactModel _selectedContact;
+
+        public ContactModel SelectedContact
         {
-            _selectedContact = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(DisplayedContactName));
-        }
-    }
-
-    /// <summary>
-    /// Nazwa kontaktu do wyświetlenia na górze czatu.
-    /// </summary>
-    public string DisplayedContactName =>
-        CurrentUserSessionService.CurrentUser?.Username ?? "@UserName";
-
-    private string _message;
-
-    /// <summary>
-    /// Treść wiadomości wpisywanej przez użytkownika.
-    /// </summary>
-    public string Message
-    {
-        get => _message;
-        set
-        {
-            _message = value;
-            OnPropertyChanged();
-        }
-    }
-
-    /// <summary>
-    /// Komenda do wylogowania użytkownika.
-    /// </summary>
-    public RelayCommand LogoutCommand { get; set; }
-
-    /// <summary>
-    /// Zdarzenie wywoływane po żądaniu wylogowania.
-    /// </summary>
-    public event EventHandler LogoutRequested;
-
-    /// <summary>
-    /// Inicjalizuje nowy egzemplarz klasy <see cref="MainViewModel"/>.
-    /// Ustawia domyślne dane, wiąże komendy i subskrybuje zmiany sesji użytkownika.
-    /// </summary>
-    /// <param name="currentUserSessionService">Serwis zarządzający bieżącą sesją użytkownika.</param>
-    public MainViewModel(CurrentUserSessionService currentUserSessionService, UserService userService)
-    {
-        Messages = new ObservableCollection<MessageModel>();
-        Contacts = new ObservableCollection<ContactModel>();
-        CurrentUserSessionService = currentUserSessionService;
-        _userService = userService;
-
-        LoadContactsAsync();
-
-        LogoutCommand = new RelayCommand(o =>
-        {
-            currentUserSessionService.ClearUserSession();
-            LogoutRequested?.Invoke(this, EventArgs.Empty);
-        });
-
-        CurrentUserSessionService.PropertyChanged += CurrentUserSessionService_PropertyChanged;
-
-        SendCommand = new RelayCommand(o =>
-        {
-            if (string.IsNullOrWhiteSpace(Message))
-                return;
-
-            Messages.Add(new MessageModel
+            get => _selectedContact;
+            set
             {
-                Message = Message,
-                FirstMessage = false,
+                _selectedContact = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DisplayedContactName));
+                // TODO: Tutaj, po zmianie SelectedContact, możesz załadować historię wiadomości
+            }
+        }
+
+        public string DisplayedContactName
+        {
+            get => CurrentUserSessionService.CurrentUser?.Username ?? "@UserName";
+        }
+
+        private string _message;
+
+        public string Message
+        {
+            get => _message;
+            set
+            {
+                _message = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event EventHandler LogoutRequested;
+
+        public MainViewModel(CurrentUserSessionService currentUserSessionService, UserService userService)
+        {
+            Messages = new ObservableCollection<MessageModel>();
+            Contacts = new ObservableCollection<ContactModel>();
+            CurrentUserSessionService = currentUserSessionService;
+            _userService = userService;
+
+            LogoutCommand = new RelayCommand(o =>
+            {
+                currentUserSessionService.ClearUserSession();
+                LogoutRequested?.Invoke(this, EventArgs.Empty);
             });
 
-            Message = string.Empty;
-        });
-        
-        OnPropertyChanged(nameof(DisplayedContactName));
-    }
+            CurrentUserSessionService.PropertyChanged += CurrentUserSessionService_PropertyChanged;
 
-    /// <summary>
-    /// Reaguje na zmiany właściwości w serwisie sesji użytkownika, np. po zalogowaniu lub wylogowaniu.
-    /// </summary>
-    /// <param name="sender">Obiekt, który wywołał zdarzenie.</param>
-    /// <param name="e">Argumenty zdarzenia, zawierające nazwę zmienionej właściwości.</param>
-    private void CurrentUserSessionService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(CurrentUserSessionService.CurrentUser) ||
-            e.PropertyName == nameof(CurrentUserSessionService.IsUserLoggedIn))
-        {
-            OnPropertyChanged(nameof(DisplayedContactName));
+
+            SendCommand = new RelayCommand(ExecuteSendCommand);
         }
-    }
 
-    /// <summary>
-    /// Asynchronicznie ładuje listę kontaktów dla bieżącego użytkownika.
-    /// Pobiera dane kontaktów z serwisu użytkownika, mapuje je na modele
-    /// i dodaje do kolekcji kontaktów.
-    /// Loguje odpowiednie informacje lub błędy związane z procesem ładowania.
-    /// </summary>
-    /// <returns>Task reprezentujący wykonanie operacji ładowania kontaktów.</returns>
-    public async Task LoadContactsAsync()
-    {
-        Log.Information("MainViewModel: Rozpoczynam ładowanie kontaktów.");
-        try
+
+        private async Task ExecuteSendCommand(object o)
         {
-            List<ContactDto> contactDtos = await _userService.GetContactsAsync();
-            Contacts.Clear();
-            if (contactDtos != null && contactDtos.Any())
+            if (string.IsNullOrWhiteSpace(Message) || SelectedContact == null)
             {
-                foreach (var dto in contactDtos)
+                Serilog.Log.Warning("MainViewModel: Próba wysłania pustej wiadomości lub brak wybranego kontaktu.");
+                return;
+            }
+
+            var sendMessageRequest = new SendMessageRequest
+            {
+                ReceiverId = SelectedContact.Id,
+                Content = Message
+            };
+
+            bool messageSent = await _userService.SendMessageAsync(sendMessageRequest);
+
+            if (messageSent)
+            {
+                Messages.Add(new MessageModel
                 {
-                    ContactModel model = MapContactDtoToModel(dto); 
-                    Contacts.Add(model); 
-                }
-                Log.Information("MainViewModel: Pomyślnie załadowano {Count} kontaktów.", Contacts.Count);
+                    Time = DateTime.Now,
+                    Username = CurrentUserSessionService.CurrentUser?.Username ?? "Ja",
+                    Message = Message,
+                    IsNativeOrigin = true,
+                    ImageSource = CurrentUserSessionService.CurrentUser?.ProfilePictureUrl ?? "/Images/icons8-male-user-64.png"
+                });
+                Message = string.Empty;
+                Serilog.Log.Information("MainViewModel: Wiadomość pomyślnie dodana do UI i wysłana.");
             }
             else
             {
-                Log.Information("MainViewModel: Nie znaleziono żadnych kontaktów lub lista jest pusta.");
+                Serilog.Log.Error("MainViewModel: Nie udało się wysłać wiadomości do serwera.");
             }
         }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "MainViewModel: Błąd podczas ładowania kontaktów.");
-        }
-    }
 
-    /// <summary>
-    /// Mapuje obiekt <see cref="ContactDto"/> na model <see cref="ContactModel"/>.
-    /// </summary>
-    /// <param name="contactDto">Obiekt danych kontaktu użytkownika uzyskany z API.</param>
-    /// <returns>Zmapowany obiekt <see cref="ContactModel"/> odpowiadający podanym danym DTO.</returns>
-    private ContactModel MapContactDtoToModel(ContactDto contactDto)
-    {
-        ContactModel contactModel = new ContactModel
+        private void CurrentUserSessionService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            Username = contactDto.Username,
-            ImageSource = contactDto.ProfilePictureUrl ?? "/Images/icons8-male-user-64.png",
-            Messages = new ObservableCollection<MessageModel>()
-        };
-        return contactModel;
+            if (e.PropertyName == nameof(CurrentUserSessionService.CurrentUser) ||
+                e.PropertyName == nameof(CurrentUserSessionService.IsUserLoggedIn))
+            {
+                OnPropertyChanged(nameof(DisplayedContactName));
+                // TODO: Załaduj kontakty, gdy użytkownik się zaloguje (jeśli nie ładujesz w MainWindow_Loaded)
+                // if (CurrentUserSessionService.IsUserLoggedIn)
+                // {
+                //     _ = LoadContactsAsync();
+                // }
+            }
+        }
+
+        public async Task LoadContactsAsync()
+        {
+            Serilog.Log.Information("MainViewModel: Rozpoczynam ładowanie kontaktów.");
+            try
+            {
+                List<ContactDto> contactDtos = await _userService.GetContactsAsync();
+                Contacts.Clear();
+                if (contactDtos != null && contactDtos.Any())
+                {
+                    foreach (var dto in contactDtos)
+                    {
+                        ContactModel model = MapContactDtoToModel(dto);
+                        Contacts.Add(model);
+                    }
+                    Serilog.Log.Information("MainViewModel: Pomyślnie załadowano {Count} kontaktów.", Contacts.Count);
+                }
+                else
+                {
+                    Serilog.Log.Information("MainViewModel: Nie znaleziono żadnych kontaktów lub lista jest pusta.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "MainViewModel: Błąd podczas ładowania kontaktów.");
+            }
+        }
+
+        private ContactModel MapContactDtoToModel(ContactDto contactDto)
+        {
+            ContactModel contactModel = new ContactModel
+            {
+                Id = contactDto.Id,
+                Username = contactDto.Username,
+                DisplayName = contactDto.DisplayName,
+                ImageSource = contactDto.ProfilePictureUrl ?? "/Images/icons8-male-user-64.png",
+                Messages = new ObservableCollection<MessageModel>()
+            };
+            return contactModel;
+        }
     }
 }

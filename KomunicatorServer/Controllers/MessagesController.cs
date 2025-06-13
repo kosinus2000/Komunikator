@@ -29,44 +29,48 @@ public class MessagesController : ControllerBase
     public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
     {
         _logger.LogInformation("Otrzymano żądanie POST na /api/Messages/send od użytkownika.");
-        
-        //walidowanie danych wejsciowych
-        if (request == null || string.IsNullOrEmpty(request.ReceiverId) || string.IsNullOrEmpty(request.Content))
-        {
-            _logger.LogWarning("Próba wysłania wiadomości z pustym odbiorcą lub treścią. Request: {@Request}", request);
-            return BadRequest(new { Message = "Musisz podać odbiorcę i treść wiadomości." });
-        }
-        
-        //pobranie ID zalogowanego użytkowniaka
-        var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (senderId == null)
-        {
-            _logger.LogError("Zalogowany użytkownik nie posiada ID (SenderId jest null) mimo [Authorize].");
-            return Unauthorized(new { Message = "Błąd autoryzacji. ID nadawcy nie mogło zostać pobrane." });
-        }
-
-        // wyszukanie odbiorcy
-        var receiverUser = await _userManager.FindByIdAsync(request.ReceiverId);
-        if (receiverUser == null)
-        {
-            _logger.LogWarning("Próba wysłania wiadomości do nieistniejącego odbiorcy o ID: {ReceiverId}",
-                request.ReceiverId);
-            return NotFound(new { Message = "Odbiorca wiadomości nie został znaleziony." });
-        }
-
-        // obiekt wiadomosci chatmessage
-        var chatMessage =
-            new ChatMessage 
-            {
-                SenderId = senderId,
-                ReceiverId = request.ReceiverId,
-                Content = request.Content,
-                Timestamp = DateTime.UtcNow 
-            };
-
-        // zapis wiadomosci do bazy danych
+        string? senderId = null;
         try
         {
+            senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //walidowanie danych wejsciowych
+            if (request == null || string.IsNullOrEmpty(request.ReceiverId) ||
+                string.IsNullOrWhiteSpace(request.Content)) // <-- ZMIANA TUTAJ: Sprawdza Content
+            {
+                _logger.LogWarning("Próba wysłania wiadomości z pustym odbiorcą lub treścią. Request: {@Request}",
+                    request);
+                // <-- ZMIANA TUTAJ: Poprawiona składnia anonimowego obiektu
+                return BadRequest(new { Message = "Musisz podać odbiorcę i treść wiadomości." });
+            }
+
+            //pobranie ID zalogowanego użytkowniaka
+            if (senderId == null)
+            {
+                _logger.LogError("Zalogowany użytkownik nie posiada ID (SenderId jest null) mimo [Authorize].");
+                return Unauthorized(new { Message = "Błąd autoryzacji. ID nadawcy nie mogło zostać pobrane." });
+            }
+
+            // wyszukanie odbiorcy
+            var receiverUser = await _userManager.FindByIdAsync(request.ReceiverId);
+            if (receiverUser == null)
+            {
+                _logger.LogWarning("Próba wysłania wiadomości do nieistniejącego odbiorcy o ID: {ReceiverId}",
+                    request.ReceiverId);
+                return NotFound(new { Message = "Odbiorca wiadomości nie został znaleziony." });
+            }
+
+            // obiekt wiadomosci chatmessage
+            var chatMessage =
+                new ChatMessage
+                {
+                    SenderId = senderId,
+                    ReceiverId = request.ReceiverId,
+                    Content = request.Content,
+                    Timestamp = DateTime.UtcNow
+                };
+
+            // zapis wiadomosci do bazy danych
+
             _dbContext.ChatMessages.Add(chatMessage);
             await _dbContext.SaveChangesAsync();
 
