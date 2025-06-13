@@ -1,14 +1,15 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using KomunikatorServer.Data;
 using KomunikatorServer.DTOs;
 using KomunikatorShared.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace KomunikatorServer.Controllers
 {
@@ -17,18 +18,18 @@ namespace KomunikatorServer.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class ContactController : ControllerBase
+    public class ContactsController : ControllerBase
     {
-        private readonly ILogger<ContactController> _logger;
+        private readonly ILogger<ContactsController> _logger;
         private readonly UserManager<AppUser> _userManager;
         private readonly ApplicationDbContext _dbContext;
 
         /// <summary>
-        /// Inicjalizuje nową instancję kontrolera <see cref="ContactController"/>.
+        /// Inicjalizuje nową instancję kontrolera <see cref="ContactsController"/>.
         /// </summary>
         /// <param name="logger">Logger używany do rejestrowania zdarzeń.</param>
         /// <param name="userManager">Menadżer użytkowników do obsługi danych użytkowników.</param>
-        public ContactController(ILogger<ContactController> logger, UserManager<AppUser> userManager,
+        public ContactsController(ILogger<ContactsController> logger, UserManager<AppUser> userManager,
             ApplicationDbContext dbContext)
         {
             _logger = logger;
@@ -41,53 +42,55 @@ namespace KomunikatorServer.Controllers
         /// </summary>
         /// <returns>Zadanie reprezentujące asynchroniczną operację. Wynik zadania zawiera <see cref="ActionResult"/>
         /// opakowujący listę obiektów <see cref="ContactDto"/>, reprezentujących kontakty użytkownika.</returns>
-       [Authorize]
+        [Authorize]
         [HttpGet("getContacts")]
+
         public async Task<ActionResult<List<ContactDto>>> GetContacts()
         {
-            _logger.LogInformation("Otrzymano żądanie GET na /api/contact/getContacts");
-
+            _logger.LogInformation("=== WYWOŁANO GetContacts() ==="); _logger.LogInformation("=== Request Path: {Path} ===", Request.Path); _logger.LogInformation("=== Auth Header: {AuthHeader} ===", Request.Headers.Authorization.FirstOrDefault() ?? "BRAK"); _logger.LogInformation("Otrzymano żądanie GET na /api/contact/getContacts");
             try
             {
-                string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (currentUserId == null)
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(currentUserId))
                 {
-                    _logger.LogWarning(
-                        "Użytkownik nie jest zalogowany, mimo atrybutu [Authorize]. Brak ClaimTypes.NameIdentifier.");
-                    return Unauthorized(new { Message = "Błąd autoryzacji. Użytkownik nie jest zalogowany." });
+                    _logger.LogWarning("Autoryzowany użytkownik nie posiada ClaimTypes.NameIdentifier.");
+                    return Unauthorized(new
+                    { Message = "Błąd uwierzytelnienia: ID użytkownika nie znaleziono w tokenie." });
                 }
 
-                var contacts = await _dbContext.UserContacts
-                    .Where(uc => uc.UserId == currentUserId)
-                    .Include(uc => uc.Contact)
-                    .Select(uc => new ContactDto
+                _logger.LogInformation(
+                    "JWT: Token zweryfikowany dla użytkownika {Username} (ID: {UserId}). Przetwarzam GetContacts.",
+                    User.Identity.Name, currentUserId);
+                var contacts = await _dbContext.UserContacts.Where(uc => uc.UserId == currentUserId)
+                    .Include(uc => uc.Contact).Select(uc => new ContactDto
                     {
                         Id = uc.Contact.Id,
                         Username = uc.Contact.UserName,
                         Email = uc.Contact.Email,
-                        ProfilePictureUrl = uc.Contact.ProfilePictureUrl ?? "KomunicatorServer/wwwroot/ProfilePictures/icons8-male-user-32.png",
                         RegistrationDate = uc.Contact.RegistrationDate,
-                        DisplayName = uc.Contact.DisplayName
+                        DisplayName = uc.Contact.DisplayName,
+                        ProfilePictureUrl = uc.Contact.ProfilePictureUrl
                     }).ToListAsync();
                 _logger.LogInformation("Zwracam {Count} kontaktów dla użytkownika {Username}.", contacts.Count,
                     User.Identity.Name);
                 return Ok(contacts);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogError(e, "Wystąpił błąd serwera podczas pobierania kontaktów dla użytkownika {Username}.",
+                _logger.LogError(ex, "Wystąpił błąd serwera podczas pobierania kontaktów dla użytkownika {Username}.",
                     User.Identity.Name);
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { Message = "Wystąpił błąd serwera podczas pobierania kontaktów." });
+                    new { Message = "Wystąpił wewnętrzny błąd serwera podczas pobierania kontaktów." });
             }
         }
+
 
         /// <summary>
         /// Dodaje nowy kontakt dla użytkownika.
         /// </summary>
         /// <param name="request">Obiekt żądania zawierający dane dotyczące kontaktu do dodania.</param>
         /// <returns>Wynik operacji w postaci odpowiedzi HTTP. W przypadku powodzenia metoda zwraca kod HTTP 201 (Created). W przypadku błędów walidacji lub serwera metoda zwraca odpowiedni kod błędu.</returns>
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("addContact")]
         public async Task<IActionResult> AddContact([FromBody] AddContactRequest request)
         {
@@ -158,7 +161,7 @@ namespace KomunikatorServer.Controllers
                     _logger.LogWarning("Użytkownik {Username} próbował dodać już istniejący kontakt: {ContactUsername}",
                         User.Identity.Name, contactUser.UserName);
                     return Conflict(new
-                        { Message = "Ten użytkownik jest już na Twojej liście kontaktów." }); // 409 Conflict
+                    { Message = "Ten użytkownik jest już na Twojej liście kontaktów." }); // 409 Conflict
                 }
 
                 // utworzenie nowego kontaktu w bazie danych

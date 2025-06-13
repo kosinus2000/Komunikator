@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace KomunikatorClient.DTOs
+namespace KomunikatorShared.DTOs
 {
     /// <summary>
     /// Reprezentuje pojedynczy błąd zwrócony przez system tożsamości (Identity).

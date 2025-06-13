@@ -119,29 +119,7 @@ public class MainViewModel : ObservableObject
 
             Message = string.Empty;
         });
-
-
-        // Tymczasowe dane testowe
-        Messages.Add(new MessageModel
-        {
-            Time = DateTime.Now,
-            Username = "User1",
-            ImageSource = "user1.png",
-            Message = "Hello!",
-            UserColor = "#FF0000",
-            IsNativeOrigin = false,
-            FirstMessage = true
-        });
-
-        for (int i = 0; i < 5; i++)
-        {
-            Contacts.Add(new ContactModel
-            {
-                Username = $"Andrzej {i}",
-                Messages = Messages
-            });
-        }
-
+        
         OnPropertyChanged(nameof(DisplayedContactName));
     }
 

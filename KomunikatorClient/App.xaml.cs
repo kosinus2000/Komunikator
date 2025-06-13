@@ -23,6 +23,8 @@ namespace KomunikatorClient
         /// </summary>
         public static IServiceProvider ServiceProvider { get; private set; }
 
+        public App() { this.ShutdownMode = ShutdownMode.OnExplicitShutdown; }
+
         /// <summary>
         /// Metoda wywoływana przy starcie aplikacji.
         /// Odpowiada za konfigurację wstrzykiwania zależności (DI) oraz systemu logowania Serilog.

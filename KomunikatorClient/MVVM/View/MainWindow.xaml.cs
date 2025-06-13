@@ -70,7 +70,7 @@ namespace KomunikatorClient.MVVM.View
         /// </summary>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Application.Current.Shutdown();
         }
 
         /// <summary>

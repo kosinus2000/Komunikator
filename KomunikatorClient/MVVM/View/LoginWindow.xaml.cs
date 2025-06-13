@@ -240,7 +240,7 @@ namespace KomunikatorClient.MVVM.View
         /// </summary>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Application.Current.Shutdown();
         }
 
         private void UserNameRoundedTxtBox_Loaded(object sender, RoutedEventArgs e) { }

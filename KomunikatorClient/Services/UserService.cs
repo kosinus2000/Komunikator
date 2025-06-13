@@ -1,16 +1,12 @@
 ﻿using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Windows.Documents;
 using KomunikatorServer.DTOs;
-using Microsoft.AspNetCore.Http;
 using Serilog;
 
 namespace KomunikatorClient.Services;
 
-/// <summary>
-/// Provides user-related operations and communicates with the server to retrieve data.
-/// </summary>
 public class UserService
 {
     private readonly HttpClient _httpClient;
@@ -21,55 +17,120 @@ public class UserService
     {
         _httpClient = httpClient;
         _currentUserSessionService = currentUserSessionService;
+
+        Log.Information("UserService: HttpClient utworzony. BaseAddress: {BaseAddress}",
+            _httpClient.BaseAddress?.ToString() ?? "null");
     }
 
-    /// <summary>
-    /// Retrieves a list of user contacts from the server.
-    /// </summary>
-    /// <returns>
-    /// A list of ContactDto objects representing the user's contacts.
-    /// Returns an empty list if the request fails or encounters an error.
-    /// </returns>
+    public void SetAuthToken(string token)
+    {
+        if (!string.IsNullOrEmpty(token))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            Log.Information("UserService: Token ustawiony. Długość: {Length} znaków", token.Length);
+
+            // Debug: pokaż pierwsze i ostatnie znaki tokenu
+            var tokenPreview = token.Length > 20 ?
+                $"{token.Substring(0, 10)}...{token.Substring(token.Length - 10)}" :
+                token;
+            Log.Information("UserService: Token preview: {TokenPreview}", tokenPreview);
+        }
+        else
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            Log.Warning("UserService: Token usunięty (pusty)");
+        }
+    }
+
     public async Task<List<ContactDto>> GetContactsAsync()
     {
-        string endpointUrl = $"{ServerApiBaseUrl}/api/contacts/getContacts";
-        Log.Information("UserService: Wysyłam żądanie GET po listę kontaktów na adres: {Url}", endpointUrl);
+        // POPRAWIONY URL - wielka litera C w Contact!
+        string endpointUrl = $"{ServerApiBaseUrl}/api/Contacts/getContacts";
+
+        Log.Information("UserService: === ROZPOCZYNAM GetContactsAsync ===");
+        Log.Information("UserService: URL: {Url}", endpointUrl);
+
+        // Sprawdź stan autoryzacji
+        var authHeader = _httpClient.DefaultRequestHeaders.Authorization;
+        if (authHeader == null)
+        {
+            Log.Error("UserService: BRAK TOKENU AUTORYZACJI!");
+            return new List<ContactDto>();
+        }
+
+        Log.Information("UserService: Authorization Header: {Scheme} {Parameter}",
+            authHeader.Scheme,
+            authHeader.Parameter?.Length > 20 ?
+                $"{authHeader.Parameter.Substring(0, 10)}...{authHeader.Parameter.Substring(authHeader.Parameter.Length - 10)}" :
+                authHeader.Parameter);
 
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(endpointUrl);
+            Log.Information("UserService: Wysyłam żądanie HTTP GET...");
+
+            var response = await _httpClient.GetAsync(endpointUrl);
+
+            Log.Information("UserService: Otrzymano odpowiedź:");
+            Log.Information("  - Status Code: {StatusCode} ({StatusCodeNumber})", response.StatusCode, (int)response.StatusCode);
+            Log.Information("  - Reason Phrase: {ReasonPhrase}", response.ReasonPhrase ?? "null");
+            Log.Information("  - Headers Count: {HeadersCount}", response.Headers.Count());
+
+            // Wyświetl wszystkie headery odpowiedzi dla debugowania
+            foreach (var header in response.Headers)
+            {
+                Log.Information("  - Response Header: {Key} = {Value}", header.Key, string.Join(", ", header.Value));
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                List<ContactDto>? contacts = await response.Content.ReadFromJsonAsync<List<ContactDto>>();
-                Log.Information("UserService: Pomyślnie pobrano {Count} kontaktów.", contacts?.Count ?? 0);
-                return contacts ?? new List<ContactDto>();
+                string rawContent = await response.Content.ReadAsStringAsync();
+                Log.Information("UserService: Raw response content: {Content}", rawContent);
+
+                try
+                {
+                    List<ContactDto>? contacts = JsonSerializer.Deserialize<List<ContactDto>>(rawContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    Log.Information("UserService: Pomyślnie zdeserializowano {Count} kontaktów", contacts?.Count ?? 0);
+                    return contacts ?? new List<ContactDto>();
+                }
+                catch (JsonException jsonEx)
+                {
+                    Log.Error(jsonEx, "UserService: Błąd deserializacji JSON. Raw content: {RawContent}", rawContent);
+                    return new List<ContactDto>();
+                }
             }
             else
             {
                 string errorContent = await response.Content.ReadAsStringAsync();
-                Log.Warning(
-                    "UserService: Nie udało się pobrać kontaktów. Status: {StatusCode}, Treść błędu: {ErrorContent}",
-                    response.StatusCode, errorContent);
+                Log.Error("UserService: Żądanie nieudane!");
+                Log.Error("  - Status: {StatusCode}", response.StatusCode);
+                Log.Error("  - Error Content: {ErrorContent}", errorContent);
+
+                // Szczególne traktowanie błędu 401 Unauthorized
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    Log.Error("UserService: BŁĄD AUTORYZACJI - sprawdź token JWT!");
+                }
+
                 return new List<ContactDto>();
             }
         }
         catch (HttpRequestException ex)
         {
-            Log.Error(ex,
-                "UserService: Błąd żądania HTTP podczas pobierania kontaktów. Serwer może być nieosiągalny. URL: {Url}",
-                endpointUrl);
-            return new List<ContactDto>();
-        }
-        catch (JsonException ex)
-        {
-            Log.Error(ex, "UserService: Błąd deserializacji JSON podczas pobierania kontaktów.");
+            Log.Error(ex, "UserService: HttpRequestException - problem z połączeniem");
             return new List<ContactDto>();
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "UserService: Nieoczekiwany błąd podczas pobierania kontaktów.");
+            Log.Error(ex, "UserService: Nieoczekiwany błąd");
             return new List<ContactDto>();
+        }
+        finally
+        {
+            Log.Information("UserService: === ZAKOŃCZONO GetContactsAsync ===");
         }
     }
 }
-
