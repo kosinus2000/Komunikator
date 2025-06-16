@@ -224,7 +224,6 @@
                                Margin="0,0,0,10"
                                HorizontalAlignment="Center" />
 
-                    <!-- W RegisterStackPanel -->
                     <StackPanel Margin="0,0,0,5">
                         <Label Content="Nazwa użytkownika:"
                                Foreground="#F3F9D2"
@@ -236,7 +235,7 @@
                                  x:Name="UserNameRoundedTxtBoxRegistration"
                                  Style="{StaticResource ThemedTextBoxStyle}"
                                  Loaded="UserNameRoundedTxtBoxRegistration_Loaded" />
-                        <!-- Usunięto: Text="{Binding RegisterUsername, Mode=TwoWay}" -->
+
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,5">

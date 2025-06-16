@@ -37,6 +37,7 @@ public class MainViewModel : ObservableObject
     public RelayCommand SendCommand { get; set; }
 
 
+
     private ContactModel _selectedContact;
 
     /// <summary>
@@ -119,7 +120,7 @@ public class MainViewModel : ObservableObject
 
             Message = string.Empty;
         });
-        
+
         OnPropertyChanged(nameof(DisplayedContactName));
     }
 
@@ -148,8 +149,8 @@ public class MainViewModel : ObservableObject
             {
                 foreach (var dto in contactDtos)
                 {
-                    ContactModel model = MapContactDtoToModel(dto); 
-                    Contacts.Add(model); 
+                    ContactModel model = MapContactDtoToModel(dto);
+                    Contacts.Add(model);
                 }
                 Log.Information("MainViewModel: Pomyślnie załadowano {Count} kontaktów.", Contacts.Count);
             }

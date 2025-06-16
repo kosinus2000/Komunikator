@@ -25,8 +25,9 @@ namespace KomunikatorClient.MVVM.View
             InitializeComponent();
             _mainViewModel = mainViewModel;
             this.DataContext = _mainViewModel;
-            _ = _mainViewModel.LoadContactsAsync(); //Wywołanie asynchrnonicznej metody dodoawania kontaktów w konstruktorze,
-                                                    //który  nie może być asynch
+            _ = _mainViewModel
+                .LoadContactsAsync(); //Wywołanie asynchrnonicznej metody dodoawania kontaktów w konstruktorze,
+            //który  nie może być asynch
             _mainViewModel.LogoutRequested += OnLogoutRequested;
         }
 
@@ -91,7 +92,6 @@ namespace KomunikatorClient.MVVM.View
             Image img = sender as Image;
             if (img != null && img.ContextMenu != null)
             {
-                // Ustaw DataContext dla ContextMenu
                 img.ContextMenu.DataContext = this.DataContext;
                 img.ContextMenu.IsOpen = true;
             }
@@ -102,6 +102,16 @@ namespace KomunikatorClient.MVVM.View
             this.Close();
             LoginWindow loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
+        }
+
+        private void BtnAddContact_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BtnContactOptions_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

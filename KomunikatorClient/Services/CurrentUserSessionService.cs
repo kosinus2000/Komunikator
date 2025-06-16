@@ -10,6 +10,8 @@ namespace KomunikatorClient.Services
     public class CurrentUserSessionService : ObservableObject
     {
         private LoginSuccessResponse? _currentUser;
+        public string ProfilePictureUrl { get; set; }
+
 
         /// <summary>
         /// Pobiera lub ustawia bieżącego zalogowanego użytkownika.
