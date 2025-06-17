@@ -26,7 +26,7 @@ public class MainViewModel : ObservableObject
     /// <summary>
     /// Kolekcja kontaktów użytkownika.
     /// </summary>
-    public ObservableCollection<ContactModel> Contacts { get; set; }
+    public ObservableCollection<ContactModel> Contacts { get; set; } = new ObservableCollection<ContactModel>();
 
     /// <summary>
     /// Serwis przechowujący informacje o aktualnie zalogowanym użytkowniku.

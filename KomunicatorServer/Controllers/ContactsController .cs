@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace KomunikatorServer.Controllers
 {
@@ -29,6 +31,7 @@ namespace KomunikatorServer.Controllers
         /// </summary>
         /// <param name="logger">Logger używany do rejestrowania zdarzeń.</param>
         /// <param name="userManager">Menadżer użytkowników do obsługi danych użytkowników.</param>
+        /// <param name="dbContext">Kontekst bazy danych aplikacji.</param>
         public ContactsController(ILogger<ContactsController> logger, UserManager<AppUser> userManager,
             ApplicationDbContext dbContext)
         {
@@ -42,27 +45,28 @@ namespace KomunikatorServer.Controllers
         /// </summary>
         /// <returns>Zadanie reprezentujące asynchroniczną operację. Wynik zadania zawiera <see cref="ActionResult"/>
         /// opakowujący listę obiektów <see cref="ContactDto"/>, reprezentujących kontakty użytkownika.</returns>
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("getContacts")]
-
         public async Task<ActionResult<List<ContactDto>>> GetContacts()
         {
-            _logger.LogInformation("=== WYWOŁANO GetContacts() ==="); _logger.LogInformation("=== Request Path: {Path} ===", Request.Path); _logger.LogInformation("=== Auth Header: {AuthHeader} ===", Request.Headers.Authorization.FirstOrDefault() ?? "BRAK"); _logger.LogInformation("Otrzymano żądanie GET na /api/contact/getContacts");
+            _logger.LogInformation("Otrzymano żądanie GET na /api/Contacts/getContacts.");
             try
             {
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(currentUserId))
                 {
                     _logger.LogWarning("Autoryzowany użytkownik nie posiada ClaimTypes.NameIdentifier.");
-                    return Unauthorized(new
-                    { Message = "Błąd uwierzytelnienia: ID użytkownika nie znaleziono w tokenie." });
+                    return Unauthorized(new { Message = "Błąd uwierzytelnienia: ID użytkownika nie znaleziono w tokenie." });
                 }
 
                 _logger.LogInformation(
-                    "JWT: Token zweryfikowany dla użytkownika {Username} (ID: {UserId}). Przetwarzam GetContacts.",
+                    "Pobieram kontakty dla użytkownika {Username} (ID: {UserId}).",
                     User.Identity.Name, currentUserId);
-                var contacts = await _dbContext.UserContacts.Where(uc => uc.UserId == currentUserId)
-                    .Include(uc => uc.Contact).Select(uc => new ContactDto
+
+                var contacts = await _dbContext.UserContacts
+                    .Where(uc => uc.UserId == currentUserId)
+                    .Include(uc => uc.Contact)
+                    .Select(uc => new ContactDto
                     {
                         Id = uc.Contact.Id,
                         Username = uc.Contact.UserName,
@@ -70,7 +74,9 @@ namespace KomunikatorServer.Controllers
                         RegistrationDate = uc.Contact.RegistrationDate,
                         DisplayName = uc.Contact.DisplayName,
                         ProfilePictureUrl = uc.Contact.ProfilePictureUrl
-                    }).ToListAsync();
+                    })
+                    .ToListAsync();
+
                 _logger.LogInformation("Zwracam {Count} kontaktów dla użytkownika {Username}.", contacts.Count,
                     User.Identity.Name);
                 return Ok(contacts);
@@ -84,29 +90,25 @@ namespace KomunikatorServer.Controllers
             }
         }
 
-
         /// <summary>
         /// Dodaje nowy kontakt dla użytkownika.
         /// </summary>
-        /// <param name="request">Obiekt żądania zawierający dane dotyczące kontaktu do dodania.</param>
-        /// <returns>Wynik operacji w postaci odpowiedzi HTTP. W przypadku powodzenia metoda zwraca kod HTTP 201 (Created). W przypadku błędów walidacji lub serwera metoda zwraca odpowiedni kod błędu.</returns>
+        /// <param name="request">Obiekt żądania zawierający nazwę użytkownika (TargetUsername) kontaktu do dodania.</param>
+        /// <returns>Wynik operacji w postaci odpowiedzi HTTP.</returns>
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("addContact")]
-        public async Task<IActionResult> AddContact([FromBody] AddContactRequest request)
+        public async Task<IActionResult> AddContact([FromBody] AddContactRequestDto request)
         {
             try
             {
-                _logger.LogInformation("Otrzymano żądanie POST na /api/Contacts/addContact.");
+                _logger.LogInformation("Otrzymano żądanie POST na /api/Contacts/addContact. TargetUsername: {TargetUsername}", request?.TargetUsername);
 
-                //Podstawowa walidacja requesta
-                if (request == null || (string.IsNullOrEmpty(request.Username) && string.IsNullOrEmpty(request.UserId)))
+                if (request == null || string.IsNullOrWhiteSpace(request.TargetUsername))
                 {
-                    _logger.LogWarning(
-                        "Próba dodania kontaktu z pustymi lub niekompletnymi danymi. Request: {@Request}", request);
-                    return BadRequest(new { Message = "Musisz podać nazwę użytkownika lub ID kontaktu do dodania." });
+                    _logger.LogWarning("Próba dodania kontaktu z pustą lub niekompletną nazwą użytkownika (TargetUsername).");
+                    return BadRequest(new { Message = "Musisz podać nazwę użytkownika (TargetUsername) kontaktu do dodania." });
                 }
 
-                //walidacja, na wypadek braku [Authenticate]
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning(
@@ -115,44 +117,29 @@ namespace KomunikatorServer.Controllers
                     return BadRequest(ModelState);
                 }
 
-                //Pobranie id usera
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (currentUserId == null)
+                if (string.IsNullOrEmpty(currentUserId))
                 {
-                    _logger.LogError(
-                        "Użytkownik nie jest zalogowany, mimo atrybutu [Authorize]. Brak ClaimTypes.NameIdentifier.");
+                    _logger.LogError("Użytkownik nie jest zalogowany, mimo atrybutu [Authorize]. Brak ClaimTypes.NameIdentifier.");
                     return Unauthorized(new { Message = "Błąd autoryzacji. Użytkownik nie jest zalogowany." });
                 }
 
-                //wyszukanie uzytkownika który ma być dodoany jako kontakt
-                AppUser contactUser = null;
-
-                if (!string.IsNullOrEmpty(request.UserId))
-                {
-                    contactUser = await _userManager.FindByIdAsync(request.UserId);
-                }
-                else if (!string.IsNullOrEmpty(request.Username))
-                {
-                    contactUser = await _userManager.FindByNameAsync(request.Username);
-                }
+                AppUser contactUser = await _userManager.FindByNameAsync(request.TargetUsername);
 
                 if (contactUser == null)
                 {
                     _logger.LogWarning(
-                        "Próba dodania nieistniejącego użytkownika jako kontaktu. Dane: {UserId}/{Username}",
-                        request.UserId, request.Username);
+                        "Próba dodania nieistniejącego użytkownika jako kontaktu. Nazwa użytkownika: {TargetUsername}",
+                        request.TargetUsername);
                     return NotFound(new { Message = "Użytkownik do dodania jako kontakt nie został znaleziony." });
                 }
 
-                //walidacja, czy użytkownik nie dodaje sam siebie jako kontaktu
                 if (contactUser.Id == currentUserId)
                 {
-                    _logger.LogWarning("Użytkownik {Username} próbował dodać samego siebie do kontaktów.",
-                        User.Identity.Name);
+                    _logger.LogWarning("Użytkownik {Username} próbował dodać samego siebie do kontaktów.", User.Identity.Name);
                     return BadRequest(new { Message = "Nie możesz dodać samego siebie do kontaktów." });
                 }
 
-                //sprawdzenie czy użytkownik już istnieje w bazie danych jako kontakt
                 bool contactAlreadyExists = await _dbContext.UserContacts
                     .AnyAsync(uc => uc.UserId == currentUserId && uc.ContactId == contactUser.Id);
 
@@ -160,31 +147,92 @@ namespace KomunikatorServer.Controllers
                 {
                     _logger.LogWarning("Użytkownik {Username} próbował dodać już istniejący kontakt: {ContactUsername}",
                         User.Identity.Name, contactUser.UserName);
-                    return Conflict(new
-                    { Message = "Ten użytkownik jest już na Twojej liście kontaktów." }); // 409 Conflict
+                    return Conflict(new { Message = "Ten użytkownik jest już na Twojej liście kontaktów." });
                 }
 
-                // utworzenie nowego kontaktu w bazie danych
                 var newContactEntry = new UserContact
                 {
                     UserId = currentUserId,
                     ContactId = contactUser.Id,
                     AddedDate = DateTime.UtcNow
                 };
-                //dodanie nowego kontaktu do bazy danych
+
                 _dbContext.UserContacts.Add(newContactEntry);
                 await _dbContext.SaveChangesAsync();
 
                 _logger.LogInformation("Użytkownik {Username} pomyślnie dodał kontakt: {ContactUsername}",
                     User.Identity.Name, contactUser.UserName);
-                return CreatedAtAction(nameof(GetContacts), new { id = contactUser.Id },
-                    new { Message = "Kontakt został pomyślnie dodany." });
+
+                var addedContactDto = new ContactDto
+                {
+                    Id = contactUser.Id,
+                    Username = contactUser.UserName,
+                    Email = contactUser.Email,
+                    RegistrationDate = contactUser.RegistrationDate,
+                    DisplayName = contactUser.DisplayName,
+                    ProfilePictureUrl = contactUser.ProfilePictureUrl
+                };
+
+                return CreatedAtAction(
+                    nameof(GetContacts),
+                    new { },
+                    new { Message = "Kontakt został pomyślnie dodany.", Contact = addedContactDto }
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
                     "Wystąpił nieoczekiwany błąd serwera podczas dodawania kontaktu dla użytkownika {Username}.",
                     User.Identity.Name);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Message = "Wystąpił wewnętrzny błąd serwera. Spróbuj ponownie później." });
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje użytkowników po fragmencie nazwy użytkownika lub nazwy wyświetlanej.
+        /// </summary>
+        /// <param name="searchTerm">Ciąg znaków do wyszukania.</param>
+        /// <returns>Lista uproszczonych danych użytkowników pasujących do kryteriów wyszukiwania, którzy nie są aktualnie zalogowanym użytkownikiem i nie są już dodani do jego kontaktów.</returns>
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("searchUsers")]
+        public async Task<ActionResult<List<UserSearchDto>>> SearchUsers([FromQuery] string searchTerm)
+        {
+            _logger.LogInformation("Otrzymano żądanie GET na /api/Contacts/searchUsers. SearchTerm: {SearchTerm}", searchTerm);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    _logger.LogWarning("Parametr wyszukiwania jest pusty lub zawiera tylko białe znaki.");
+                    return BadRequest(new { Message = "Parametr wyszukiwania nie może być pusty." });
+                }
+
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    _logger.LogError("Użytkownik nie jest zalogowany, mimo atrybutu [Authorize]. Brak ClaimTypes.NameIdentifier.");
+                    return Unauthorized(new { Message = "Błąd autoryzacji: ID użytkownika nie znaleziono." });
+                }
+
+                var users = await _userManager.Users
+                    .Where(u => u.Id != currentUserId &&
+                                (u.UserName.Contains(searchTerm) || (u.DisplayName != null && u.DisplayName.Contains(searchTerm))))
+                    .Where(u => !_dbContext.UserContacts.Any(uc => uc.UserId == currentUserId && uc.ContactId == u.Id))
+                    .Select(u => new UserSearchDto
+                    {
+                        UserId = u.Id,
+                        Username = u.UserName,
+                        ProfilePictureUrl = u.ProfilePictureUrl
+                    })
+                    .Take(10)
+                    .ToListAsync();
+
+                _logger.LogInformation("Zwracam {Count} użytkowników dla wyszukiwanej frazy: {SearchTerm}.", users.Count, searchTerm);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Wystąpił nieoczekiwany błąd serwera podczas wyszukiwania użytkowników dla {SearchTerm}.", searchTerm);
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     new { Message = "Wystąpił wewnętrzny błąd serwera. Spróbuj ponownie później." });
             }

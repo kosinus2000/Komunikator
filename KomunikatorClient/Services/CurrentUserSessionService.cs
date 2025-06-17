@@ -1,5 +1,5 @@
 ﻿using KomunikatorClient.Core;
-using KomunikatorClient.MVVM.Model; // <--- Upewnij się, że masz ten using!
+using KomunikatorClient.MVVM.Model;
 using KomunikatorShared.DTOs;
 using System.ComponentModel;
 

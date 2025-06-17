@@ -1,15 +1,16 @@
-﻿// MVVM/Model/ContactModel.cs
-using System.Collections.ObjectModel;
-using System.ComponentModel; // Dodaj ten using
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices; // Dodaj ten using dla atrybutu CallerMemberName (opcjonalnie, ale dobre praktyki)
+using System.Runtime.CompilerServices;
+using KomunikatorServer.DTOs;
+using KomunikatorShared.DTOs;
 
 namespace KomunikatorClient.MVVM.Model
 {
     /// <summary>
     /// Reprezentuje kontakt (użytkownika) w aplikacji czatu, wraz z przypisanymi wiadomościami.
     /// </summary>
-    public class ContactModel : INotifyPropertyChanged // !!! Ważne: Implementacja INotifyPropertyChanged
+    public class ContactModel : INotifyPropertyChanged
     {
         private string _username;
         /// <summary>
@@ -23,7 +24,7 @@ namespace KomunikatorClient.MVVM.Model
                 if (_username != value)
                 {
                     _username = value;
-                    OnPropertyChanged(); // Powiadomienie UI o zmianie
+                    OnPropertyChanged();
                 }
             }
         }
@@ -40,7 +41,7 @@ namespace KomunikatorClient.MVVM.Model
                 if (_imageSource != value)
                 {
                     _imageSource = value;
-                    OnPropertyChanged(); // Powiadomienie UI o zmianie
+                    OnPropertyChanged();
                 }
             }
         }
@@ -54,13 +55,10 @@ namespace KomunikatorClient.MVVM.Model
             get => _messages;
             set
             {
-                // Ważne: ObservableCollection sama powiadamia o zmianach w KOLEKCJI (dodawanie/usuwanie elementów),
-                // ale przypisanie CAŁKOWICIE NOWEJ KOLEKCJI wymaga powiadomienia UI o zmianie właściwości 'Messages'.
                 if (_messages != value)
                 {
                     _messages = value;
-                    OnPropertyChanged(); // Powiadomienie UI o zmianie, jeśli zmieniasz całą kolekcję
-                    // Ponadto, ponieważ LastMessage zależy od Messages, powinniśmy też powiadomić o jego zmianie
+                    OnPropertyChanged();
                     OnPropertyChanged(nameof(LastMessage));
                 }
             }
@@ -68,12 +66,49 @@ namespace KomunikatorClient.MVVM.Model
 
         /// <summary>
         /// Ostatnia wiadomość w konwersacji z tym kontaktem lub "Brak wiadomości", jeśli brak danych.
-        /// Używamy ?., aby bezpiecznie sprawdzić, czy Messages jest nullem.
         /// </summary>
         public string LastMessage => Messages?.Any() == true ? Messages.Last().Message : "Brak wiadomości";
 
+        /// <summary>
+        /// Globalny identyfikator kontaktu (użytkownika).
+        /// </summary>
+        public string? Id { get; set; }
 
-        // --- Implementacja INotifyPropertyChanged ---
+        /// <summary>
+        /// Adres e-mail użytkownika.
+        /// </summary>
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// Data rejestracji użytkownika.
+        /// </summary>
+        public DateTime RegistrationDate { get; set; }
+
+        /// <summary>
+        /// Wyświetlana nazwa kontaktu (opcjonalna).
+        /// </summary>
+        public string? DisplayName { get; set; }
+
+        /// <summary>
+        /// Metoda fabryczna do tworzenia ContactModel z ContactDto.
+        /// </summary>
+        /// <param name="dto">Obiekt ContactDto do konwersji.</param>
+        /// <returns>Nowa instancja ContactModel.</returns>
+        public static ContactModel FromDto(ContactDto dto)
+        {
+            return new ContactModel
+            {
+                Id = dto.Id,
+                Username = dto.Username ?? "Nieznany",
+                Email = dto.Email,
+                RegistrationDate = dto.RegistrationDate,
+                DisplayName = dto.DisplayName ?? dto.Username,
+                ImageSource = dto.ProfilePictureUrl ?? "/Images/default_profile_picture.png",
+                Messages = new ObservableCollection<MessageModel>()
+            };
+        }
+
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -88,16 +123,10 @@ namespace KomunikatorClient.MVVM.Model
 
         /// <summary>
         /// Konstruktor ContactModel.
-        /// !!! Ważne: Inicjalizuje kolekcję Messages, aby uniknąć NullReferenceException.
         /// </summary>
         public ContactModel()
         {
             Messages = new ObservableCollection<MessageModel>();
-            // Możesz też tutaj ustawić domyślną ImageSource, jeśli nie jest to zrobione w definicji właściwości
-            // ImageSource = "/Images/icons8-male-user-64.png";
-
-            // Subskrybujemy zdarzenie CollectionChanged, aby aktualizować LastMessage
-            // gdy wiadomości są dodawane lub usuwane.
             Messages.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(LastMessage));
         }
     }

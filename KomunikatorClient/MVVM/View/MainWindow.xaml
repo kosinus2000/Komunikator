@@ -147,7 +147,7 @@
                                            Source="../../Images/icons8-add-48.png"
                                            Opacity="0.5"
                                            Name="btnAddContact"
-                                           MouseDown="BtnAddContact_OnMouseDown" />
+                                           MouseDown="OpenAddContactWindow" />
                                 </Grid>
                             </StackPanel>
                         </Border>

@@ -7,18 +7,13 @@
         xmlns:viewModel="clr-namespace:KomunikatorClient.MVVM.ViewModel"
         xmlns:komunikator="clr-namespace:Komunikator"
         mc:Ignorable="d"
-        Height="200" 
-        Width="250"
-        Title="MyChat"
-        Window.Icon="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
+        Height="450"  Width="350"   Title="Dodaj kontakt" Window.Icon="../../Images/ChatGPT Image 25 maj 2025, 11_46_26 (1).png"
         WindowStyle="None"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         AllowsTransparency="True"
         ShowInTaskbar="True"
-        Background="{x:Null}"
-        d:DataContext="{d:DesignInstance Type=viewModel:MainViewModel, IsDesignTimeCreatable=True}">
-
+        Background="{x:Null}">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -36,7 +31,6 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <!-- Added ThemedTextBoxStyle -->
             <Style TargetType="{x:Type TextBox}" x:Key="ThemedTextBoxStyle">
                 <Setter Property="Margin" Value="5" />
                 <Setter Property="Padding" Value="5" />
@@ -55,7 +49,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Nagłówek -->
         <Border Background="#B26A994E"
                 CornerRadius="15,15,0,0">
             <Grid Background="Transparent">
@@ -68,8 +61,7 @@
                       PreviewMouseLeftButtonDown="UIElement_OnPreviewMouseLeftButtonDown"
                       Background="Transparent">
                     <Label
-                        Content="MyChat"
-                        FontWeight="SemiBold"
+                        Content="Dodaj Kontakt" FontWeight="SemiBold"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Margin="10,0,0,0"
@@ -108,12 +100,11 @@
             </Grid>
         </Border>
 
-        <!-- Miejsce na zawartość -->
         <Grid Grid.Row="1">
             <Border Background="#A7C957"
-                    BorderBrush="#B36A994E"
-                    BorderThickness="5,0,5,5"
-                    CornerRadius="0,0,0,15">
+            BorderBrush="#B36A994E"
+            BorderThickness="5,0,5,5"
+            CornerRadius="0,0,0,15">
                 <StackPanel>
                     <TextBlock Text="Dodaj kontakt!"
                                Foreground="#F3F9D2"
@@ -122,35 +113,54 @@
                                Margin="0,20,0,10"
                                HorizontalAlignment="Center" />
 
-                    <StackPanel Margin="0,0,0,5">
-                        <Label Content="Nazwa użytkownika:"
-                               Foreground="#F3F9D2"
-                               FontSize="10"
-                               VerticalAlignment="Bottom"
-                               Height="22"
-                               Margin="20,0,0,0"/>
-                        <TextBox Width="200" Height="30"
-                                 x:Name="UserNameRoundedTxtBoxRegistration"
+                    <StackPanel Orientation="Horizontal" Margin="20,0,20,10" HorizontalAlignment="Center">
+                        <TextBox x:Name="SearchTermTextBox" Width="200" Height="30"
                                  Style="{StaticResource ThemedTextBoxStyle}"
-                                 Loaded="textBoxAddContact" />
-
-
-                        <komunikator:RoundedButton Width="100"
-                                                   Height="30"
-                                                   ButtonContent="Dodaj"
-                                                   CornerRadius="0,5,0,5"
-                                                   Background="#F3F9D2"
-                                                   BorderBrush="#6A994E"
-                                                   BorderThickness="3"
-                                                   FontSize="12"
-                                                   FontWeight="DemiBold"
-                                                   Foreground="#6A994E"
-                                                   Margin="0,15,0,0"
-                                                   Click="btnAddContact_Click" Loaded="RoundedButton_Loaded" />
-
+                                 VerticalContentAlignment="Center"
+                                 TextChanged="SearchTermTextBox_TextChanged" />
+                        <Button x:Name="SearchButton" Content="Szukaj" Width="80" Height="30" Margin="10,0,0,0"
+                                Background="#F3F9D2"
+                                BorderBrush="#6A994E"
+                                BorderThickness="3"
+                                FontSize="12"
+                                FontWeight="DemiBold"
+                                Foreground="#6A994E"
+                                Click="SearchButton_Click" />
                     </StackPanel>
-                </StackPanel>
 
+                    <ListBox x:Name="SearchResultsListBox" Margin="20,0,20,10" MaxHeight="200"
+                             Background="Transparent" BorderBrush="Transparent" Foreground="White">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#6A994E" BorderThickness="1" CornerRadius="5" Padding="5" Margin="0,2">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Username}" FontWeight="Bold" Foreground="#F3F9D2"/>
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="10" Foreground="#F3F9D2" Opacity="0.8"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Dodaj" Width="60"
+                                                Background="#F3F9D2"
+                                                BorderBrush="#6A994E"
+                                                BorderThickness="2"
+                                                FontSize="10"
+                                                FontWeight="DemiBold"
+                                                Foreground="#6A994E"
+                                                Tag="{Binding}"
+                                                Click="AddContactFromSearch_Click"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock x:Name="StatusMessageTextBlock" Margin="20,10,20,20" Foreground="#F3F9D2" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>
