@@ -133,4 +133,78 @@ public class UserService
             Log.Information("UserService: === ZAKOŃCZONO GetContactsAsync ===");
         }
     }
+    public async Task UploadProfilePicture(byte[] imageData, string fileName)
+    {
+        var token = _currentUserSessionService.CurrentUser?.Token;
+        if (string.IsNullOrEmpty(token))
+        {
+            Log.Warning("Próba wysłania zdjęcia profilowego bez tokena.");
+            throw new InvalidOperationException("Użytkownik nie jest zalogowany.");
+        }
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent(imageData);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png"); // Dostosuj do faktycznego typu obrazu
+            content.Add(fileContent, "file", fileName); // "file" musi pasować do nazwy parametru w API serwera
+
+            HttpResponseMessage response = await _httpClient.PostAsync("User/UploadProfilePicture", content); // Dostosuj URL do swojego API
+            response.EnsureSuccessStatusCode();
+            Log.Information("Zdjęcie profilowe wgrane.");
+        }
+        catch (HttpRequestException ex)
+        {
+            Log.Error(ex, "Błąd HTTP podczas wgrywania zdjęcia.");
+            throw new Exception("Błąd serwera podczas wgrywania zdjęcia.", ex);
+        }
+        finally
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+    }
+
+    public async Task<string> GetProfilePictureUrl(string? username)
+    {
+        if (string.IsNullOrEmpty(username))
+        {
+            return "/Images/default_profile.png"; // Zwróć domyślny, jeśli brak nazwy użytkownika
+        }
+
+        var token = _currentUserSessionService.CurrentUser?.Token;
+        if (string.IsNullOrEmpty(token))
+        {
+            Log.Warning("Próba pobrania zdjęcia profilowego bez tokena.");
+            return "/Images/default_profile.png";
+        }
+
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+
+            HttpResponseMessage response = await _httpClient.GetAsync($"User/ProfilePictureUrl?username={username}");
+            response.EnsureSuccessStatusCode();
+
+            // Jeśli serwer zwraca bezpośrednio URL jako string:
+            string? url = await response.Content.ReadAsStringAsync();
+            return url ?? "KomunikatorClient/Images/icons8-male-user-32.png";
+
+            // Jeśli serwer zwraca JSON, np. { "profilePictureUrl": "..." }:
+            // var result = await response.Content.ReadFromJsonAsync<YourProfilePictureUrlResponseDto>();
+            // return result?.ProfilePictureUrl ?? "/Images/default_profile.png";
+        }
+        catch (HttpRequestException ex)
+        {
+            Log.Error(ex, "Błąd HTTP podczas pobierania URL zdjęcia profilowego.");
+            return "/Images/default_profile.png";
+        }
+        finally
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null; // Wyczyść nagłówek
+        }
+    }
+
 }

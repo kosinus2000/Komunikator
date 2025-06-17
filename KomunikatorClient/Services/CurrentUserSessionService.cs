@@ -1,56 +1,55 @@
 ﻿using KomunikatorClient.Core;
+using KomunikatorClient.MVVM.Model; // <--- Upewnij się, że masz ten using!
 using KomunikatorShared.DTOs;
+using System.ComponentModel;
 
 namespace KomunikatorClient.Services
 {
-    /// <summary>
-    /// Klasa serwisu odpowiedzialna za zarządzanie bieżącą sesją użytkownika w aplikacji.
-    /// Dziedziczy po <see cref="ObservableObject"/>, aby umożliwiać powiadamianie o zmianach właściwości.
-    /// </summary>
     public class CurrentUserSessionService : ObservableObject
     {
-        private LoginSuccessResponse? _currentUser;
-        public string ProfilePictureUrl { get; set; }
+        private CurrentUserModel? _currentUser;
 
 
-        /// <summary>
-        /// Pobiera lub ustawia bieżącego zalogowanego użytkownika.
-        /// Zmiana tej właściwości wywołuje zdarzenia <see cref="ObservableObject.PropertyChanged"/>
-        /// dla <see cref="CurrentUser"/> oraz <see cref="IsUserLoggedIn"/>.
-        /// </summary>
-        public LoginSuccessResponse? CurrentUser
+        public CurrentUserModel? CurrentUser
         {
             get => _currentUser;
             set
             {
-                _currentUser = value;
-                OnPropertyChanged(); // Powiadamia o zmianie właściwości CurrentUser
-                OnPropertyChanged(nameof(IsUserLoggedIn)); // Powiadamia o zmianie właściwości IsUserLoggedIn
+                if (_currentUser != null) _currentUser.PropertyChanged -= CurrentUser_PropertyChanged;
+                SetProperty(ref _currentUser, value);
+                if (_currentUser != null) _currentUser.PropertyChanged += CurrentUser_PropertyChanged;
+
+                OnPropertyChanged(nameof(IsUserLoggedIn));
             }
         }
 
-        /// <summary>
-        /// Wskazuje, czy użytkownik jest aktualnie zalogowany.
-        /// Zwraca <c>true</c> jeśli <see cref="CurrentUser"/> nie jest null i jego token nie jest pusty.
-        /// </summary>
         public bool IsUserLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_currentUser.Token);
 
-        /// <summary>
-        /// Ustawia sesję użytkownika na podstawie dostarczonych danych logowania.
-        /// </summary>
-        /// <param name="user">Obiekt <see cref="LoginSuccessResponse"/> zawierający dane zalogowanego użytkownika.</param>
-        public void SetUserSession(LoginSuccessResponse user)
+        public void SetUserSession(LoginSuccessResponse userResponseDto)
         {
-            CurrentUser = user;
+            CurrentUser = CurrentUserModel.FromLoginSuccessResponse(userResponseDto);
         }
 
-        /// <summary>
-        /// Czyści bieżącą sesję użytkownika, efektywnie wylogowując go z aplikacji.
-        /// Ustawia <see cref="CurrentUser"/> na null.
-        /// </summary>
         public void ClearUserSession()
         {
             CurrentUser = null;
+        }
+
+        /// <summary>
+        /// Aktualizuje URL zdjęcia profilowego w modelu bieżącego użytkownika.
+        /// Setter w CurrentUserModel.ProfilePictureUrl zadba o domyślne zdjęcie, jeśli podasz null/puste.
+        /// </summary>
+        public void UpdateCurrentUserProfilePictureUrl(string? newUrl)
+        {
+            if (CurrentUser != null)
+            {
+                CurrentUser.ProfilePictureUrl = newUrl;
+            }
+        }
+
+        private void CurrentUser_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // Ta metoda nie wymaga zmian, bo logika domyślnej ikony jest w CurrentUserModel.
         }
     }
 }

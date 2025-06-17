@@ -22,6 +22,40 @@ namespace KomunikatorClient.MVVM.View
         public AddContactWindow()
         {
             InitializeComponent();
+            btnMaximize.IsEnabled = false;
+        }
+
+        private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void textBoxAddContact(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnAddContact_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void RoundedButton_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

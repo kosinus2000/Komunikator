@@ -17,18 +17,38 @@ namespace KomunikatorClient.Core
         /// <summary>
         /// Zdarzenie wywoływane, gdy wartość właściwości ulegnie zmianie.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged; // Zmiana na nullable event
 
         /// <summary>
         /// Wywołuje zdarzenie PropertyChanged, informując powiązany interfejs użytkownika o zmianie właściwości.
         /// </summary>
-        /// <param name="propertyname">
+        /// <param name="propertyName">
         /// Nazwa właściwości, która uległa zmianie.
         /// Wartość domyślna jest automatycznie ustawiana przez kompilator.
         /// </param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyname = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) // Zmiana na nullable string i virtual
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Ustawia wartość właściwości i wywołuje zdarzenie PropertyChanged, jeśli wartość uległa zmianie.
+        /// </summary>
+        /// <typeparam name="T">Typ właściwości.</typeparam>
+        /// <param name="field">Referencja do pola backing field właściwości.</param>
+        /// <param name="value">Nowa wartość właściwości.</param>
+        /// <param name="propertyName">Nazwa właściwości. Domyślnie ustawiana przez kompilator.</param>
+        /// <returns>True, jeśli wartość właściwości została zmieniona; w przeciwnym razie false.</returns>
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false; // Wartość się nie zmieniła, nie rób nic
+            }
+
+            field = value; // Ustaw nową wartość
+            OnPropertyChanged(propertyName); // Powiadom o zmianie
+            return true; // Wartość została zmieniona
         }
     }
 }

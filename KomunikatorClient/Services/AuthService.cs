@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // Upewnij się, że masz to dla SelectMany
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json; // <-- Upewnij się, że masz ten using dla PostAsJsonAsync
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Serilog;
 using KomunikatorClient.DTOs;
-using KomunikatorShared.DTOs; // Upewnij się, że to jest poprawny using dla DTOs
+using KomunikatorShared.DTOs;
 
 namespace KomunikatorClient.Services
 {
@@ -51,12 +51,11 @@ namespace KomunikatorClient.Services
 
             try
             {
-                // === ZMIANA TUTAJ: Używamy PostAsJsonAsync zamiast FormUrlEncodedContent ===
                 Log.Information("AuthService: Wysyłanie żądania POST (JSON) na adres: {Url} dla użytkownika {Username}",
                     loginEndpointUrl, loginRequestModel.Username);
 
                 HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(loginEndpointUrl, loginRequestModel);
-                // === KONIEC ZMIANY ===
+
 
                 if (httpResponse.IsSuccessStatusCode)
                 {

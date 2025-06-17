@@ -214,7 +214,7 @@
                                 <Image.ContextMenu>
                                     <ContextMenu
                                         DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Dodaj zdjęcie" />
+                                        <MenuItem Header="Dodaj zdjęcie" Command="{Binding ChangeProfilePictureCommand}" />
                                         <MenuItem Header="Ustawienia" />
                                         <Separator />
                                         <MenuItem Header="Wyloguj" Command="{Binding LogoutCommand}" />
@@ -313,7 +313,7 @@
                                        RenderOptions.BitmapScalingMode="Fant"
                                        Margin="5,5,5,0" Opacity="0.7"
                                        Name="btnSend"
-                                       MouseDown="">
+                                       MouseDown="btnSendMessage">
 
                                 </Image>
 

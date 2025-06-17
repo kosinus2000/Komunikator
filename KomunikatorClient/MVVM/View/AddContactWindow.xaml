@@ -36,6 +36,16 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <!-- Added ThemedTextBoxStyle -->
+            <Style TargetType="{x:Type TextBox}" x:Key="ThemedTextBoxStyle">
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="Padding" Value="5" />
+                <Setter Property="Background" Value="#F3F9D2" />
+                <Setter Property="BorderBrush" Value="#6A994E" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontWeight" Value="Normal" />
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -80,8 +90,7 @@
                         </Viewbox>
                     </Button>
                     <Button x:Name="btnMaximize" Style="{StaticResource vanilla_button}"
-                            Grid.Column="1"
-                            Click="btnMaximize_Click">
+                            Grid.Column="1">
                         <Viewbox>
                             <Image Source="/Images/icons8-maximize-window-96.png"
                                    Opacity="0.8" />
@@ -119,7 +128,7 @@
                                FontSize="10"
                                VerticalAlignment="Bottom"
                                Height="22"
-                               Margin="50,0,0,0"/>
+                               Margin="20,0,0,0"/>
                         <TextBox Width="200" Height="30"
                                  x:Name="UserNameRoundedTxtBoxRegistration"
                                  Style="{StaticResource ThemedTextBoxStyle}"

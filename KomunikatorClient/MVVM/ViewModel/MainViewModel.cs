@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Windows.Documents;
 using KomunikatorClient.Core;
 using KomunikatorClient.MVVM.Model;
 using KomunikatorClient.Services;
 using KomunikatorServer.DTOs;
+using Microsoft.Win32;
 using Serilog;
 
 namespace KomunikatorClient.MVVM.ViewModel;
@@ -36,7 +38,7 @@ public class MainViewModel : ObservableObject
     /// </summary>
     public RelayCommand SendCommand { get; set; }
 
-
+    public RelayCommand ChangeProfilePictureCommand { get; set; }
 
     private ContactModel _selectedContact;
 
@@ -58,7 +60,7 @@ public class MainViewModel : ObservableObject
     /// Nazwa kontaktu do wyświetlenia na górze czatu.
     /// </summary>
     public string DisplayedContactName =>
-        CurrentUserSessionService.CurrentUser?.Username ?? "@UserName";
+       _selectedContact?.Username ?? " ";
 
     private string _message;
 
@@ -97,6 +99,11 @@ public class MainViewModel : ObservableObject
         CurrentUserSessionService = currentUserSessionService;
         _userService = userService;
 
+        if (CurrentUserSessionService.IsUserLoggedIn)
+        {
+            _ = LoadContactsAsync();
+        }
+
         LoadContactsAsync();
 
         LogoutCommand = new RelayCommand(o =>
@@ -115,13 +122,54 @@ public class MainViewModel : ObservableObject
             Messages.Add(new MessageModel
             {
                 Message = Message,
+                Time = DateTime.Now,
+                Username = CurrentUserSessionService.CurrentUser?.Username ?? "Unknown",
+                ImageSource = CurrentUserSessionService.CurrentUser?.ProfilePictureUrl,
                 FirstMessage = false,
             });
-
             Message = string.Empty;
         });
 
+        ChangeProfilePictureCommand = new RelayCommand(async o => await ChangeProfilePicture());
+
         OnPropertyChanged(nameof(DisplayedContactName));
+    }
+
+    private async Task ChangeProfilePicture()
+    {
+        if (CurrentUserSessionService.CurrentUser == null || string.IsNullOrEmpty(CurrentUserSessionService.CurrentUser.Username))
+        {
+            Serilog.Log.Warning("Próba zmiany zdjęcia profilowego bez zalogowanego użytkownika.");
+            return;
+        }
+
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        // ... (Ustawienia openFileDialog) ...
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                string filePath = openFileDialog.FileName;
+                byte[] imageData = File.ReadAllBytes(filePath);
+
+                // Tutaj rozwiążemy błędy kompilacji
+                await _userService.UploadProfilePicture(imageData, Path.GetFileName(filePath));
+                string newProfilePictureUrl = await _userService.GetProfilePictureUrl(CurrentUserSessionService.CurrentUser.Username);
+
+                // Aktualizacja URL-a. Metoda UpdateCurrentUserProfilePictureUrl
+                // w CurrentUserSessionService przekaże go do CurrentUserModel,
+                // a CurrentUserModel zadba o domyślne zdjęcie.
+                CurrentUserSessionService.UpdateCurrentUserProfilePictureUrl(newProfilePictureUrl);
+
+                await LoadContactsAsync();
+                Serilog.Log.Information("Zaktualizowano zdjęcie profilowe użytkownika.");
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Błąd podczas zmiany zdjęcia profilowego.");
+            }
+        }
     }
 
     /// <summary>
@@ -168,12 +216,11 @@ public class MainViewModel : ObservableObject
 
     private ContactModel MapContactDtoToModel(ContactDto contactDto)
     {
-        ContactModel contactModel = new ContactModel
+        return new ContactModel
         {
             Username = contactDto.Username,
-            ImageSource = contactDto.ProfilePictureUrl ?? "/Images/icons8-male-user-64.png",
+            ImageSource = string.IsNullOrEmpty(contactDto.ProfilePictureUrl) ? "/Images/icons8-male-user-32.png" : contactDto.ProfilePictureUrl,
             Messages = new ObservableCollection<MessageModel>()
         };
-        return contactModel;
     }
 }

@@ -106,10 +106,16 @@ namespace KomunikatorClient.MVVM.View
 
         private void BtnAddContact_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            throw new NotImplementedException();
+            AddContactWindow addContact = new AddContactWindow();
+            addContact.ShowDialog();
         }
 
         private void BtnContactOptions_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void btnSendMessage(object sender, MouseButtonEventArgs e)
         {
             throw new NotImplementedException();
         }
