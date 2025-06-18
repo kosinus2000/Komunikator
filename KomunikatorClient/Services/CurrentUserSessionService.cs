@@ -1,54 +1,88 @@
 ﻿using KomunikatorClient.Core;
+using KomunikatorClient.MVVM.Model;
 using KomunikatorShared.DTOs;
+using System.ComponentModel;
 
 namespace KomunikatorClient.Services
 {
     /// <summary>
-    /// Klasa serwisu odpowiedzialna za zarządzanie bieżącą sesją użytkownika w aplikacji.
-    /// Dziedziczy po <see cref="ObservableObject"/>, aby umożliwiać powiadamianie o zmianach właściwości.
+    /// Serwis zarządzający sesją aktualnie zalogowanego użytkownika.
+    /// Przechowuje dane użytkownika i informuje o zmianach stanu logowania.
     /// </summary>
     public class CurrentUserSessionService : ObservableObject
     {
-        private LoginSuccessResponse? _currentUser;
+        private CurrentUserModel? _currentUser;
 
         /// <summary>
-        /// Pobiera lub ustawia bieżącego zalogowanego użytkownika.
-        /// Zmiana tej właściwości wywołuje zdarzenia <see cref="ObservableObject.PropertyChanged"/>
-        /// dla <see cref="CurrentUser"/> oraz <see cref="IsUserLoggedIn"/>.
+        /// Pobiera lub ustawia model bieżącego użytkownika.
+        /// Przy zmianie subskrybuje lub odsubskrybuje zdarzenia PropertyChanged
+        /// i aktualizuje stan zalogowania użytkownika.
         /// </summary>
-        public LoginSuccessResponse? CurrentUser
+        public CurrentUserModel? CurrentUser
         {
             get => _currentUser;
             set
             {
-                _currentUser = value;
-                OnPropertyChanged(); // Powiadamia o zmianie właściwości CurrentUser
-                OnPropertyChanged(nameof(IsUserLoggedIn)); // Powiadamia o zmianie właściwości IsUserLoggedIn
+                // Odsubskrybuj zdarzenia od poprzedniego obiektu, jeśli istnieje
+                if (_currentUser != null) _currentUser.PropertyChanged -= CurrentUser_PropertyChanged;
+
+                // Ustaw nową wartość i powiadom o zmianie
+                SetProperty(ref _currentUser, value);
+
+                // Subskrybuj zdarzenia od nowego obiektu, jeśli istnieje
+                if (_currentUser != null) _currentUser.PropertyChanged += CurrentUser_PropertyChanged;
+
+                // Powiadom o zmianie właściwości IsUserLoggedIn
+                OnPropertyChanged(nameof(IsUserLoggedIn));
             }
         }
 
         /// <summary>
         /// Wskazuje, czy użytkownik jest aktualnie zalogowany.
-        /// Zwraca <c>true</c> jeśli <see cref="CurrentUser"/> nie jest null i jego token nie jest pusty.
+        /// Zwraca true, jeśli CurrentUser nie jest nullem i posiada ważny token.
         /// </summary>
         public bool IsUserLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_currentUser.Token);
 
         /// <summary>
-        /// Ustawia sesję użytkownika na podstawie dostarczonych danych logowania.
+        /// Ustawia sesję użytkownika na podstawie danych otrzymanych po pomyślnym zalogowaniu.
+        /// Tworzy nowy obiekt CurrentUserModel i przypisuje go do CurrentUser.
         /// </summary>
-        /// <param name="user">Obiekt <see cref="LoginSuccessResponse"/> zawierający dane zalogowanego użytkownika.</param>
-        public void SetUserSession(LoginSuccessResponse user)
+        /// <param name="userResponseDto">Obiekt DTO zawierający dane zalogowanego użytkownika i token.</param>
+        public void SetUserSession(LoginSuccessResponse userResponseDto)
         {
-            CurrentUser = user;
+            CurrentUser = CurrentUserModel.FromLoginSuccessResponse(userResponseDto);
         }
 
         /// <summary>
-        /// Czyści bieżącą sesję użytkownika, efektywnie wylogowując go z aplikacji.
-        /// Ustawia <see cref="CurrentUser"/> na null.
+        /// Czyści sesję użytkownika, wylogowując go.
+        /// Ustawia CurrentUser na null.
         /// </summary>
         public void ClearUserSession()
         {
             CurrentUser = null;
+        }
+
+        /// <summary>
+        /// Aktualizuje URL zdjęcia profilowego w modelu bieżącego użytkownika.
+        /// Setter w CurrentUserModel.ProfilePictureUrl zadba o domyślne zdjęcie, jeśli podasz null/puste.
+        /// </summary>
+        /// <param name="newUrl">Nowy URL zdjęcia profilowego. Może być null lub pusty, aby ustawić domyślne zdjęcie.</param>
+        public void UpdateCurrentUserProfilePictureUrl(string? newUrl)
+        {
+            if (CurrentUser != null)
+            {
+                CurrentUser.ProfilePictureUrl = newUrl;
+            }
+        }
+
+        /// <summary>
+        /// Obsługuje zmiany właściwości w obiekcie CurrentUser.
+        /// Ta metoda może być użyta do reakcji na zmiany w modelu użytkownika, ale obecna logika domyślnej ikony
+        /// jest już w CurrentUserModel.
+        /// </summary>
+        private void CurrentUser_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+
         }
     }
 }

@@ -1,11 +1,14 @@
-﻿using System.Windows;
-using Serilog;
-using Serilog.Events;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using KomunikatorClient.Services;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Windows;
 using KomunikatorClient.MVVM.View;
 using KomunikatorClient.MVVM.ViewModel;
+using KomunikatorClient.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Events;
+using Microsoft.Extensions.Logging;
 
 namespace KomunikatorClient
 {
@@ -22,6 +25,11 @@ namespace KomunikatorClient
         /// </summary>
         public static IServiceProvider ServiceProvider { get; private set; }
 
+        public App()
+        {
+            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        }
+
         /// <summary>
         /// Metoda wywoływana przy starcie aplikacji.
         /// Odpowiada za konfigurację wstrzykiwania zależności (DI) oraz systemu logowania Serilog.
@@ -29,16 +37,6 @@ namespace KomunikatorClient
         /// <param name="e">Argumenty zdarzenia startowego.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            var serviceCollection = new ServiceCollection();
-
-            serviceCollection.AddTransient<LoginWindow>();
-            serviceCollection.AddSingleton<AuthService>();
-            serviceCollection.AddSingleton<CurrentUserSessionService>();
-            serviceCollection.AddSingleton<MainWindow>();
-            serviceCollection.AddSingleton<KomunikatorClient.MVVM.ViewModel.MainViewModel>();
-
-            ServiceProvider = serviceCollection.BuildServiceProvider();
-
             base.OnStartup(e);
 
             Log.Logger = new LoggerConfiguration()
@@ -52,7 +50,32 @@ namespace KomunikatorClient
                 )
                 .CreateLogger();
 
-            Log.Information("Aplikacja KomunikatorClient została uruchomiona. Serwisy zarejestrowane, Serilog skonfigurowany.");
+            Log.Information("Aplikacja KomunikatorClient uruchamia się. Rozpoczynam konfigurację serwisów.");
+
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSingleton(provider =>
+            {
+                var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7233/api/") };
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                Log.Information("HttpClient zarejestrowany z BaseAddress: {BaseAddress}", httpClient.BaseAddress);
+                return httpClient;
+            });
+
+            serviceCollection.AddTransient<LoginWindow>();
+            serviceCollection.AddSingleton<AuthService>();
+            serviceCollection.AddSingleton<CurrentUserSessionService>();
+            serviceCollection.AddSingleton<MainWindow>();
+            serviceCollection.AddSingleton<MainViewModel>();
+            serviceCollection.AddSingleton<UserService>();
+            serviceCollection.AddTransient<AddContactWindow>();
+
+            serviceCollection.AddLogging(builder => builder.AddSerilog(dispose: true));
+
+            ServiceProvider = serviceCollection.BuildServiceProvider();
+
+            Log.Information("Wszystkie serwisy zostały zarejestrowane. Uruchamianie okna logowania.");
+
         }
 
         /// <summary>

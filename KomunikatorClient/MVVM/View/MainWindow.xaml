@@ -137,13 +137,17 @@
                                            Foreground="#386641"
                                            Margin="7,0,0,0" />
 
+
+                                    <!-- Kontrolka do dodawania kontaktów -->
                                     <Image Width="20"
                                            Height="20"
                                            Margin="0,0,7,0"
                                            HorizontalAlignment="Right"
                                            RenderOptions.BitmapScalingMode="Fant"
                                            Source="../../Images/icons8-add-48.png"
-                                           Opacity="0.5" />
+                                           Opacity="0.5"
+                                           Name="btnAddContact"
+                                           MouseDown="OpenAddContactWindow" />
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -177,7 +181,6 @@
                                        Source="../../Images/icons8-male-user-64.png" />
                                 <StackPanel VerticalAlignment="Center">
 
-
                                     <!-- Kontrolka Username do uzupełnienia -->
 
 
@@ -195,22 +198,26 @@
 
 
                             <Image Grid.Column="1"
-       Width="20"
-       Height="20"
-       RenderOptions.BitmapScalingMode="Fant"
-       Source="../../Images/icons8-more-48.png"
-       Margin="10,0,10,0"
-       Opacity="0.7"
-       VerticalAlignment="Center"
-       HorizontalAlignment="Right" 
-       Name="btnUserMoreOptions" 
-       MouseDown="btnUserMoreOptions_MouseDown">
+                                   Width="20"
+                                   Height="20"
+                                   RenderOptions.BitmapScalingMode="Fant"
+                                   Source="../../Images/icons8-more-48.png"
+                                   Margin="10,0,10,0"
+                                   Opacity="0.7"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Name="btnUserMoreOptions"
+                                   MouseDown="btnUserMoreOptions_MouseDown">
+
+
+                                <!-- Kontekstowe menu dla przycisku użytkownika -->
                                 <Image.ContextMenu>
-                                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Dodaj zdjęcie" />
+                                    <ContextMenu
+                                        DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="Dodaj zdjęcie" Command="{Binding ChangeProfilePictureCommand}" />
                                         <MenuItem Header="Ustawienia" />
                                         <Separator />
-                                        <MenuItem Header="Wyloguj" Command="{Binding LogoutCommand}"/>
+                                        <MenuItem Header="Wyloguj" Command="{Binding LogoutCommand}" />
                                     </ContextMenu>
                                 </Image.ContextMenu>
                             </Image>
@@ -244,12 +251,15 @@
 
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Right">
+                                        <!--Kontrolka do ustawiania opcji kontaktu -->
                                         <Image Width="20"
                                                Height="20"
                                                RenderOptions.BitmapScalingMode="Fant"
                                                Source="../../Images/icons8-more-48.png"
                                                Margin="10,0,10,0"
-                                               Opacity="0.7" />
+                                               Opacity="0.7" 
+                                               Name="btnContactOptions"
+                                               MouseDown="BtnContactOptions_OnMouseDown"/>
 
                                     </StackPanel>
 
@@ -263,7 +273,7 @@
                                   BorderThickness="0"
                                   ItemContainerStyle="{StaticResource ChatItem}"
                                   Margin="8,0,0,0"
-                                  Grid.Row="1">
+                                  Grid.Row="1" >
 
                         </ListView>
 
@@ -296,11 +306,14 @@
 
                                 </Image>
 
+                                <!-- Kontrolka do wysyłania wiadomości -->
                                 <Image Source='../../Images/icons8-send-48.png'
                                        Width="20"
                                        Height="20"
                                        RenderOptions.BitmapScalingMode="Fant"
-                                       Margin="5,5,5,0" Opacity="0.7">
+                                       Margin="5,5,5,0" Opacity="0.7"
+                                       Name="btnSend"
+                                       MouseDown="btnSendMessage">
 
                                 </Image>
 

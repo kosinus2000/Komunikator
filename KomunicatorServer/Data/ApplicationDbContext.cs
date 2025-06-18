@@ -1,4 +1,6 @@
-﻿using KomunikatorServer.DTOs;
+﻿using System.Security.Cryptography.X509Certificates;
+using KomunikatorServer.DTOs;
+using KomunikatorServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -6,29 +8,82 @@ using Microsoft.EntityFrameworkCore;
 namespace KomunikatorServer.Data
 {
     /// <summary>
-    /// Klasa kontekstu bazy danych dla aplikacji, dziedzicząca po <see cref="IdentityDbContext{TUser}"/>.
-    /// Jest odpowiedzialna za zarządzanie tożsamością użytkowników (<see cref="AppUser"/>) oraz danymi aplikacji
-    /// za pomocą Entity Framework Core.
+    /// Klasa kontekstu bazy danych dla aplikacji komunikatora.
+    /// Dziedziczy po <see cref="IdentityDbContext{TUser}"/> i zarządza encjami związanymi z użytkownikami i kontaktami.
     /// </summary>
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
         /// <summary>
-        /// Konstruktor klasy <see cref="ApplicationDbContext"/>.
+        /// Reprezentuje relacje kontaktów między użytkownikami.
+        /// </summary>
+        public DbSet<UserContact> UserContacts { get; set; }
+
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
+        /// <summary>
+        /// Inicjalizuje nową instancję klasy <see cref="ApplicationDbContext"/>.
         /// </summary>
         /// <param name="options">Opcje konfiguracji kontekstu bazy danych.</param>
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) { }
+            : base(options)
+        {
+        }
 
         /// <summary>
-        /// Konfiguruje opcje kontekstu bazy danych.
-        /// Ta metoda może być nadpisana w celu dostosowania konfiguracji bazy danych,
-        /// np. wyboru dostawcy bazy danych lub ustawień połączenia.
+        /// Konfiguruje źródło danych oraz inne ustawienia kontekstu.
+        /// Można rozszerzyć tę metodę o dodatkowe ustawienia, np. konfigurację loggera lub dostawcy bazy danych.
         /// </summary>
-        /// <param name="optionsBuilder">Obiekt <see cref="DbContextOptionsBuilder"/> używany do konfiguracji kontekstu.</param>
+        /// <param name="optionsBuilder">Obiekt używany do konfiguracji opcji kontekstu.</param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Można tu dodać dodatkowe konfiguracje, jeśli są wymagane.
-            // Przykład: optionsBuilder.UseSqlServer("ConnectionStrings:DefaultConnection");
+        }
+
+        /// <summary>
+        /// Konfiguruje model danych za pomocą Fluent API.
+        /// Określa m.in. klucze główne, relacje i strategie usuwania danych.
+        /// </summary>
+        /// <param name="builder">Obiekt używany do tworzenia modelu danych.</param>
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<UserContact>()
+                .HasKey(uc => new { uc.UserId, uc.ContactId });
+
+            // Konfiguracja klucza głównego w tabeli UserContacts (złożony klucz).
+            builder.Entity<UserContact>()
+                .HasOne(uc => uc.User)       // UserContact ma jednego Usera
+                .WithMany(u => u.AddedContacts) // User ma wiele AddedContacts
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserContact>()
+                .HasOne(uc => uc.Contact)    // UserContact ma jednego Contacta
+                .WithMany(u => u.IsContactOf) // Contact jest w wielu IsContactOf
+                .HasForeignKey(uc => uc.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // Konfiguracja ChatMessage
+            builder.Entity<ChatMessage>()
+                .HasKey(cm => cm.Id);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(cm => cm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Receiver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(cm => cm.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
+            builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims");
+            builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles");
         }
     }
 }
