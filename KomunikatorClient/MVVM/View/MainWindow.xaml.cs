@@ -119,7 +119,10 @@ namespace KomunikatorClient.MVVM.View
         /// </summary>
         private void BtnContactOptions_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            throw new NotImplementedException();
+            if (_mainViewModel.SendCommand.CanExecute(null))
+            {
+                _mainViewModel.SendCommand.Execute(null);
+            }
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace KomunikatorClient.Core
         /// <summary>
         /// Zdarzenie wywoływane, gdy wartość właściwości ulegnie zmianie.
         /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged; // Zmiana na nullable event
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Wywołuje zdarzenie PropertyChanged, informując powiązany interfejs użytkownika o zmianie właściwości.
@@ -26,7 +26,7 @@ namespace KomunikatorClient.Core
         /// Nazwa właściwości, która uległa zmianie.
         /// Wartość domyślna jest automatycznie ustawiana przez kompilator.
         /// </param>
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) // Zmiana na nullable string i virtual
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -43,12 +43,12 @@ namespace KomunikatorClient.Core
         {
             if (EqualityComparer<T>.Default.Equals(field, value))
             {
-                return false; // Wartość się nie zmieniła, nie rób nic
+                return false;
             }
 
-            field = value; // Ustaw nową wartość
-            OnPropertyChanged(propertyName); // Powiadom o zmianie
-            return true; // Wartość została zmieniona
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
     }
 }

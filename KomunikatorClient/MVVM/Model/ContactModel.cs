@@ -108,7 +108,6 @@ namespace KomunikatorClient.MVVM.Model
             };
         }
 
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>

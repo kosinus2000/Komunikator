@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using KomunikatorServer.DTOs;
+using KomunikatorShared.DTOs;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace KomunikatorClient.Services;
@@ -44,7 +46,6 @@ public class UserService
 
     public async Task<List<ContactDto>> GetContactsAsync()
     {
-        // POPRAWIONY URL - wielka litera C w Contact!
         string endpointUrl = $"{ServerApiBaseUrl}/api/Contacts/getContacts";
 
         Log.Information("UserService: === ROZPOCZYNAM GetContactsAsync ===");
@@ -88,7 +89,7 @@ public class UserService
 
                 try
                 {
-                    List<ContactDto>? contacts = JsonSerializer.Deserialize<List<ContactDto>>(rawContent, new JsonSerializerOptions
+                    List<ContactDto>? contacts = System.Text.Json.JsonSerializer.Deserialize<List<ContactDto>>(rawContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -96,7 +97,7 @@ public class UserService
                     Log.Information("UserService: Pomyślnie zdeserializowano {Count} kontaktów", contacts?.Count ?? 0);
                     return contacts ?? new List<ContactDto>();
                 }
-                catch (JsonException jsonEx)
+                catch (System.Text.Json.JsonException jsonEx)
                 {
                     Log.Error(jsonEx, "UserService: Błąd deserializacji JSON. Raw content: {RawContent}", rawContent);
                     return new List<ContactDto>();
@@ -204,6 +205,37 @@ public class UserService
         finally
         {
             _httpClient.DefaultRequestHeaders.Authorization = null; // Wyczyść nagłówek
+        }
+    }
+    public async Task<List<MessageDto>> GetConversationWithContact(string contactId)
+    {
+        var response = await _httpClient.GetAsync($"{ServerApiBaseUrl}/api/messages/conversation/{contactId}");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<List<MessageDto>>(content) ?? new List<MessageDto>();
+    }
+
+    public async Task SendMessageAsync(string receiverId, string messageText)
+    {
+        var messageDto = new
+        {
+            ReceiverId = receiverId,
+            Content = messageText
+        };
+
+        var jsonContent = new StringContent(
+            System.Text.Json.JsonSerializer.Serialize(messageDto),
+            System.Text.Encoding.UTF8,
+            "application/json"
+        );
+
+        var response = await _httpClient.PostAsync($"{ServerApiBaseUrl}/api/messages/send", jsonContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Log.Error("Błąd serwera przy wysyłaniu wiadomości: {StatusCode} - {Error}", response.StatusCode, error);
+            throw new HttpRequestException($"Błąd {response.StatusCode}: {error}");
         }
     }
 

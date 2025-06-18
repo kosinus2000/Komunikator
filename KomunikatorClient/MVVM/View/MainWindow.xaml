@@ -273,7 +273,7 @@
                                   BorderThickness="0"
                                   ItemContainerStyle="{StaticResource ChatItem}"
                                   Margin="8,0,0,0"
-                                  Grid.Row="1">
+                                  Grid.Row="1" >
 
                         </ListView>
 
