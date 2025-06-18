@@ -1,4 +1,5 @@
 ﻿using System;
+using KomunikatorServer.Models;
 
 namespace KomunikatorServer.DTOs
 {

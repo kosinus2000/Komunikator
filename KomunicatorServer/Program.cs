@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Text;
 using KomunikatorServer.Data;
-using KomunikatorServer.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq; // Dodaj ten using dla SelectMany
+using System.Linq;
+using KomunikatorServer.Models; // Dodaj ten using dla SelectMany
 
 namespace KomunikatorServer
 {

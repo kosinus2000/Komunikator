@@ -103,7 +103,7 @@ namespace KomunikatorClient.MVVM.Model
                 Email = dto.Email,
                 RegistrationDate = dto.RegistrationDate,
                 DisplayName = dto.DisplayName ?? dto.Username,
-                ImageSource = dto.ProfilePictureUrl ?? "/Images/default_profile_picture.png",
+                ImageSource = dto.ProfilePictureUrl ?? "/Images/icons8-male-user-32.png",
                 Messages = new ObservableCollection<MessageModel>()
             };
         }

@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using KomunikatorServer.DTOs;
+using KomunikatorServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +49,7 @@ namespace KomunikatorServer.Data
 
             builder.Entity<UserContact>()
                 .HasKey(uc => new { uc.UserId, uc.ContactId });
-            
+
             // Konfiguracja klucza głównego w tabeli UserContacts (złożony klucz).
             builder.Entity<UserContact>()
                 .HasOne(uc => uc.User)       // UserContact ma jednego Usera
@@ -68,19 +69,19 @@ namespace KomunikatorServer.Data
                 .HasKey(cm => cm.Id);
 
             builder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Sender)      // Wiadomość ma jednego Nadawcę
-                .WithMany(u => u.SentMessages) // Nadawca ma wiele wysłanych wiadomości
+                .HasOne(cm => cm.Sender)
+                .WithMany(u => u.SentMessages)
                 .HasForeignKey(cm => cm.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Receiver)    // Wiadomość ma jednego Odbiorcę
-                .WithMany(u => u.ReceivedMessages) // Odbiorca ma wiele odebranych wiadomości
+                .HasOne(cm => cm.Receiver)
+                .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(cm => cm.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            
+
             builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims");
             builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles");
         }

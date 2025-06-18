@@ -27,8 +27,4 @@
     <Resource Include="wwwroot\ProfilePictures\icons8-male-user-32.png" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>

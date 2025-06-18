@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KomunikatorServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250617103308_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250618004054_InitialSchema")]
+    partial class InitialSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,25 @@ namespace KomunikatorServer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("KomunikatorServer.DTOs.AppUser", b =>
+            modelBuilder.Entity("KomunikatorServer.DTOs.UserContact", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ContactId");
+
+                    b.HasIndex("ContactId");
+
+                    b.ToTable("UserContacts");
+                });
+
+            modelBuilder.Entity("KomunikatorServer.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -98,17 +116,18 @@ namespace KomunikatorServer.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("KomunikatorServer.DTOs.ChatMessage", b =>
+            modelBuilder.Entity("KomunikatorServer.Models.ChatMessage", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("ReceiverId")
                         .IsRequired()
@@ -128,24 +147,6 @@ namespace KomunikatorServer.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("KomunikatorServer.DTOs.UserContact", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContactId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId", "ContactId");
-
-                    b.HasIndex("ContactId");
-
-                    b.ToTable("UserContacts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -280,34 +281,15 @@ namespace KomunikatorServer.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("KomunikatorServer.DTOs.ChatMessage", b =>
-                {
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", "Receiver")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", "Sender")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("KomunikatorServer.DTOs.UserContact", b =>
                 {
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", "Contact")
+                    b.HasOne("KomunikatorServer.Models.AppUser", "Contact")
                         .WithMany("IsContactOf")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", "User")
+                    b.HasOne("KomunikatorServer.Models.AppUser", "User")
                         .WithMany("AddedContacts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -316,6 +298,25 @@ namespace KomunikatorServer.Migrations
                     b.Navigation("Contact");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("KomunikatorServer.Models.ChatMessage", b =>
+                {
+                    b.HasOne("KomunikatorServer.Models.AppUser", "Receiver")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KomunikatorServer.Models.AppUser", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -329,7 +330,7 @@ namespace KomunikatorServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", null)
+                    b.HasOne("KomunikatorServer.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -338,7 +339,7 @@ namespace KomunikatorServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", null)
+                    b.HasOne("KomunikatorServer.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -353,7 +354,7 @@ namespace KomunikatorServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", null)
+                    b.HasOne("KomunikatorServer.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -362,14 +363,14 @@ namespace KomunikatorServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("KomunikatorServer.DTOs.AppUser", null)
+                    b.HasOne("KomunikatorServer.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("KomunikatorServer.DTOs.AppUser", b =>
+            modelBuilder.Entity("KomunikatorServer.Models.AppUser", b =>
                 {
                     b.Navigation("AddedContacts");
 

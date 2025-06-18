@@ -1,7 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using KomunikatorServer.DTOs;
 using KomunikatorShared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Linq;
 using KomunikatorShared.DTOs;
+using KomunikatorServer.Models;
 
 namespace KomunikatorServer.Controllers;
 

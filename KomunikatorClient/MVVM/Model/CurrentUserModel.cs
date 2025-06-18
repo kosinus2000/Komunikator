@@ -1,5 +1,4 @@
-﻿
-using KomunikatorClient.Core;
+﻿using KomunikatorClient.Core;
 using KomunikatorShared.DTOs;
 
 namespace KomunikatorClient.MVVM.Model
